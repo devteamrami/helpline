@@ -1,0 +1,82 @@
+<div class="members-container">
+  <div class="members-header">
+    <h3>Team Members</h3>
+    <button 
+      *ngIf="canManageMembers" 
+      class="btn-add-member"
+      (click)="openAddMemberDialog()"
+      [disabled]="isLoading">
+      <span class="icon">+</span>
+      Add Member
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading members...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && errorMessage" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-retry" (click)="retry()">Retry</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !errorMessage && members.length === 0" class="empty-state">
+    <div class="empty-icon">👥</div>
+    <p>No team members assigned to this project yet.</p>
+    <button 
+      *ngIf="canManageMembers" 
+      class="btn-add-first"
+      (click)="openAddMemberDialog()">
+      Add First Member
+    </button>
+  </div>
+
+  <!-- Members List -->
+  <div *ngIf="!isLoading && !errorMessage && members.length > 0" class="members-list">
+    <div class="member-card" *ngFor="let member of members">
+      <div class="member-info">
+        <div class="member-avatar">
+          {{ getMemberName(member).charAt(0).toUpperCase() }}
+        </div>
+        <div class="member-details">
+          <div class="member-name">{{ getMemberName(member) }}</div>
+          <div class="member-email">{{ member.user.email }}</div>
+          <div class="member-meta">
+            <span class="system-role">{{ member.user.systemRole }}</span>
+            <span class="joined-date">Joined {{ formatDate(member.joinedAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="member-actions">
+        <div class="role-selector" *ngIf="canManageMembers">
+          <select 
+            [value]="member.projectRole"
+            (change)="updateMemberRole(member, $any($event.target).value)"
+            class="role-dropdown"
+            [ngClass]="getRoleBadgeClass(member.projectRole)">
+            <option *ngFor="let role of projectRoles" [value]="role">
+              {{ role }}
+            </option>
+          </select>
+        </div>
+        <div class="role-badge" *ngIf="!canManageMembers" [ngClass]="getRoleBadgeClass(member.projectRole)">
+          {{ member.projectRole }}
+        </div>
+
+        <button 
+          *ngIf="canManageMembers"
+          class="btn-remove"
+          (click)="removeMember(member)"
+          title="Remove member">
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

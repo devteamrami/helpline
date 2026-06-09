@@ -1,0 +1,134 @@
+<div class="project-detail-container">
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading project details...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage && !isLoading" class="error-banner">
+    <p>{{ errorMessage }}</p>
+    <button class="btn btn-secondary" (click)="retry()">Retry</button>
+  </div>
+
+  <!-- Project Details -->
+  <div *ngIf="!isLoading && !errorMessage && project" class="project-content">
+    <!-- Header -->
+    <div class="project-header">
+      <button class="btn-back" (click)="goBack()">
+        <span class="back-icon">←</span>
+        Back to Projects
+      </button>
+
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="project-title">{{ project.name }}</h1>
+          <span class="project-code">{{ project.code }}</span>
+          <span class="status-badge" [ngClass]="getStatusClass(project.status)">
+            {{ project.status }}
+          </span>
+        </div>
+
+        <div class="action-buttons">
+          <button
+            *ngIf="canEdit"
+            class="btn btn-primary"
+            (click)="openEditDialog()">
+            <span class="icon">✏️</span>
+            Edit
+          </button>
+          <button
+            *ngIf="canArchive && project.status !== 'Archived'"
+            class="btn btn-danger"
+            (click)="archiveProject()">
+            <span class="icon">📦</span>
+            Archive
+          </button>
+          <button
+            *ngIf="canArchive && project.status === 'Archived'"
+            class="btn btn-success"
+            (click)="unarchiveProject()">
+            <span class="icon">📂</span>
+            Unarchive
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+      <!-- Description Card -->
+      <div class="info-card full-width">
+        <h2 class="card-title">Description</h2>
+        <p class="description-text">{{ project.description }}</p>
+      </div>
+
+      <!-- Project Information Card -->
+      <div class="info-card">
+        <h2 class="card-title">Project Information</h2>
+        <div class="info-list">
+          <div class="info-item">
+            <span class="info-label">Start Date:</span>
+            <span class="info-value">{{ formatDate(project.startDate) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">End Date:</span>
+            <span class="info-value">{{ formatDate(project.endDate) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Status:</span>
+            <span class="status-badge small" [ngClass]="getStatusClass(project.status)">
+              {{ project.status }}
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Project Code:</span>
+            <span class="info-value code">{{ project.code }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Creator Information Card -->
+      <div class="info-card">
+        <h2 class="card-title">Creator Information</h2>
+        <div class="creator-info">
+          <div class="creator-avatar">
+            {{ project.creator.firstName?.charAt(0) || 'U' }}{{ project.creator.lastName?.charAt(0) || '' }}
+          </div>
+          <div class="creator-details">
+            <p class="creator-name">
+              {{ project.creator.firstName }} {{ project.creator.lastName }}
+            </p>
+            <p class="creator-email">{{ project.creator.email }}</p>
+            <p class="creator-username">@{{ project.creator.username }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Members Section -->
+      <div class="info-card full-width">
+        <app-project-members-list [projectId]="project.id"></app-project-members-list>
+      </div>
+
+      <!-- Tasks Section -->
+      <div class="info-card full-width">
+        <app-task-list [projectId]="project.id"></app-task-list>
+      </div>
+
+      <!-- Activity Card -->
+      <div class="info-card">
+        <h2 class="card-title">Activity</h2>
+        <div class="info-list">
+          <div class="info-item">
+            <span class="info-label">Created:</span>
+            <span class="info-value">{{ project.createdAt | date: 'MMM d, y, h:mm a' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Last Updated:</span>
+            <span class="info-value">{{ project.updatedAt | date: 'MMM d, y, h:mm a' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

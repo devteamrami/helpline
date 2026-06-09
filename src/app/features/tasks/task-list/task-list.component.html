@@ -1,0 +1,209 @@
+<div class="tasks-container">
+  <div class="tasks-header">
+    <h3>Tasks</h3>
+    <button 
+      *ngIf="canManageTasks" 
+      class="btn-add-task"
+      (click)="openCreateDialog()"
+      [disabled]="isLoading">
+      <span class="icon">+</span>
+      Add Task
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <input 
+        type="text"
+        class="search-input"
+        placeholder="Search tasks..."
+        [formControl]="searchControl">
+    </div>
+
+    <div class="filter-group">
+      <select class="filter-select" [formControl]="statusFilter">
+        <option value="">All Statuses</option>
+        <option *ngFor="let status of statusOptions" [value]="status">
+          {{ status }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <select class="filter-select" [formControl]="priorityFilter">
+        <option value="">All Priorities</option>
+        <option *ngFor="let priority of priorityOptions" [value]="priority">
+          {{ priority }}
+        </option>
+      </select>
+    </div>
+
+    <button class="btn-clear-filters" (click)="clearFilters()">
+      Clear Filters
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading tasks...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && errorMessage" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-retry" (click)="retry()">Retry</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !errorMessage && tasks.length === 0" class="empty-state">
+    <div class="empty-icon">📋</div>
+    <p>No tasks found.</p>
+    <button 
+      *ngIf="canManageTasks" 
+      class="btn-add-first"
+      (click)="openCreateDialog()">
+      Create First Task
+    </button>
+  </div>
+
+  <!-- Tasks Table -->
+  <div *ngIf="!isLoading && !errorMessage && tasks.length > 0" class="tasks-table-container">
+    <table class="tasks-table">
+      <thead>
+        <tr>
+          <th (click)="sortByColumn('title')" class="sortable">
+            Title
+            <span class="sort-icon" *ngIf="sortBy === 'title'">
+              {{ sortOrder === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th (click)="sortByColumn('status')" class="sortable">
+            Status
+            <span class="sort-icon" *ngIf="sortBy === 'status'">
+              {{ sortOrder === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th (click)="sortByColumn('priority')" class="sortable">
+            Priority
+            <span class="sort-icon" *ngIf="sortBy === 'priority'">
+              {{ sortOrder === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th>Assignee</th>
+          <th (click)="sortByColumn('due_date')" class="sortable">
+            End Date
+            <span class="sort-icon" *ngIf="sortBy === 'due_date'">
+              {{ sortOrder === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th>Estimated</th>
+          <th>Actual</th>
+          <th>Progress</th>
+          <th *ngIf="canManageTasks">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let task of tasks" class="task-row">
+          <td class="task-title">
+            <a (click)="openTaskDetailDialog(task)" class="task-link">
+              <div class="title-text">{{ task.title }}</div>
+            </a>
+            <div class="description-preview" *ngIf="task.description">
+              {{ task.description.substring(0, 100) }}{{ task.description.length > 100 ? '...' : '' }}
+            </div>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(task.status)">
+              {{ task.status }}
+            </span>
+          </td>
+          <td>
+            <span class="priority-badge" [ngClass]="getPriorityClass(task.priority)">
+              {{ task.priority }}
+            </span>
+          </td>
+          <td class="assignee-cell">
+            <!-- Multiple assignees display -->
+            <div class="assignees-container" *ngIf="task.assignees && task.assignees.length > 0">
+              <div class="assignee-badge" *ngFor="let assignee of task.assignees.slice(0, 3)" 
+                   [title]="getAssigneeDisplayName(assignee)">
+                <div class="assignee-avatar-small">
+                  {{ getAssigneeInitials(assignee) }}
+                </div>
+                <span class="assignee-name-small">{{ getAssigneeDisplayName(assignee) }}</span>
+              </div>
+              <div class="assignee-more" *ngIf="task.assignees.length > 3" 
+                   [title]="getMoreAssigneesText(task)">
+                +{{ task.assignees.length - 3 }}
+              </div>
+            </div>
+            <!-- Fallback to single assignee (backward compatibility) -->
+            <div class="assignee-info" *ngIf="(!task.assignees || task.assignees.length === 0) && task.assignee">
+              <div class="assignee-avatar">
+                {{ getAssigneeName(task).charAt(0).toUpperCase() }}
+              </div>
+              <span>{{ getAssigneeName(task) }}</span>
+            </div>
+            <span class="unassigned" *ngIf="(!task.assignees || task.assignees.length === 0) && !task.assignee">Unassigned</span>
+          </td>
+          <td>{{ formatDate(task.dueDate) }}</td>
+          <td class="hours-cell">
+            <span class="hours-value">{{ task.estimatedHours || '-' }}</span>
+            <span class="hours-unit" *ngIf="task.estimatedHours">h</span>
+          </td>
+          <td class="hours-cell">
+            <span class="hours-value">{{ task.actualHours || 0 }}</span>
+            <span class="hours-unit">h</span>
+          </td>
+          <td class="progress-cell">
+            <div class="progress-container" *ngIf="task.estimatedHours">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="getProgressPercentage(task)" [ngClass]="getProgressClass(task)"></div>
+              </div>
+              <span class="progress-text">{{ getProgressPercentage(task) }}%</span>
+            </div>
+            <span class="no-estimate" *ngIf="!task.estimatedHours">-</span>
+          </td>
+          <td *ngIf="canManageTasks" class="actions-cell">
+            <button 
+              class="btn-action btn-edit"
+              (click)="openEditDialog(task)"
+              title="Edit task">
+              ✏️
+            </button>
+            <button 
+              class="btn-action btn-delete"
+              (click)="deleteTask(task)"
+              title="Delete task">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button 
+        class="btn-page"
+        (click)="changePage(currentPage - 1)"
+        [disabled]="currentPage === 1">
+        Previous
+      </button>
+      
+      <span class="page-info">
+        Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} tasks)
+      </span>
+      
+      <button 
+        class="btn-page"
+        (click)="changePage(currentPage + 1)"
+        [disabled]="currentPage === totalPages">
+        Next
+      </button>
+    </div>
+  </div>
+</div>

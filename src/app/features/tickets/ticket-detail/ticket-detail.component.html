@@ -1,0 +1,180 @@
+<div class="ticket-detail-container">
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading ticket...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!isLoading && loadError" class="error-banner">
+    <p>{{ loadError }}</p>
+    <button class="btn btn-secondary" (click)="loadTicket(ticket?.id ?? '')">Retry</button>
+    <button class="btn btn-secondary" (click)="goBack()">Go Back</button>
+  </div>
+
+  <!-- Main Content -->
+  <ng-container *ngIf="!isLoading && !loadError && ticket">
+
+    <!-- Back button -->
+    <button class="btn-back" (click)="goBack()">← Back to Tickets</button>
+
+    <!-- Ticket Header -->
+    <div class="ticket-header">
+      <div class="header-gradient">
+        <div class="header-content">
+          <div class="header-left">
+            <h1 class="ticket-title">{{ ticket.ticketName }}</h1>
+            <div class="ticket-meta">
+              <span class="meta-badge">👤 {{ ticket.userFirstName }} {{ ticket.userLastName }}</span>
+              <span class="meta-badge">📧 {{ ticket.userEmail }}</span>
+              <span class="meta-badge">🏢 {{ ticket.siteName }}</span>
+              <span class="meta-badge">📅 {{ formatDateTime(ticket.createdAt) }}</span>
+              <span class="meta-badge">🆔 User: {{ ticket.userId }}</span>
+              <span class="meta-badge">📍 Site ID: {{ ticket.siteId }}</span>
+            </div>
+          </div>
+          <div class="header-right">
+            <div class="status-control">
+              <label for="status-dropdown">Status</label>
+              <select
+                id="status-dropdown"
+                [formControl]="statusControl"
+                (change)="onStatusChange(statusControl.value!)"
+                class="status-select"
+                [disabled]="isUpdatingStatus">
+                <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+            </div>
+            <div *ngIf="statusError" class="status-error">{{ statusError }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="description-block">
+        <p class="description-text">{{ ticket.description }}</p>
+        <a *ngIf="ticket.pageUrl" [href]="ticket.pageUrl" target="_blank" class="page-url-link">
+          🔗 {{ ticket.pageUrl | slice:0:80 }}{{ ticket.pageUrl.length > 80 ? '...' : '' }}
+        </a>
+      </div>
+    </div>
+
+    <!-- Conversation Thread -->
+    <div class="conversation-section">
+      <h2 class="section-title">💬 Conversation <span class="count">({{ conversations.length }})</span></h2>
+
+      <div class="conversation-box">
+        <div *ngIf="conversations.length === 0" class="empty-state">
+          <p>No messages yet. Be the first to reply.</p>
+        </div>
+
+        <div class="conversation-thread">
+          <div
+            *ngFor="let entry of conversations"
+            class="message-card"
+            [class.message-staff]="entry.senderType === 'staff'"
+            [class.message-user]="entry.senderType === 'user'">
+            <div class="message-header">
+              <span class="sender-name">
+                {{ entry.senderType === 'staff' ? '🛡️ Support Team' : ('👤 ' + ticket.userFirstName + ' ' + (ticket.userLastName || '')) }}
+              </span>
+              <span class="message-time">{{ formatDateTime(entry.createdAt) }}</span>
+            </div>
+            <p class="message-body">{{ entry.message }}</p>
+            <div *ngIf="entry.attachments && entry.attachments.length > 0" class="message-attachments">
+              <a *ngFor="let att of entry.attachments" [href]="att.s3Key" target="_blank" class="attachment-chip">
+                📎 {{ getAttachmentFileName(att.s3Key, att.originalName) }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reply Form with Drag & Drop + Paste + Thumbnails -->
+    <div class="reply-section">
+      <h2 class="section-title">✏️ Add Reply</h2>
+
+      <div *ngIf="replyError" class="error-banner compact">
+        <p>{{ replyError }}</p>
+      </div>
+
+      <div class="reply-card">
+        <textarea
+          [formControl]="replyControl"
+          class="reply-textarea"
+          rows="5"
+          placeholder="Type your reply here..."
+          maxlength="5000"
+          (paste)="onPaste($event)"></textarea>
+        <div class="reply-meta">
+          <span class="char-count">{{ replyCharCount }} / 5000</span>
+        </div>
+
+        <!-- Drop Zone + File Selection -->
+        <div
+          class="drop-zone"
+          [class.drag-over]="isDragOver"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (click)="fileInput.click()">
+          <span class="drop-icon">📸</span>
+          <p class="drop-text">
+            Drop images here, paste <kbd>Ctrl+V</kbd> or <a (click)="$event.stopPropagation(); fileInput.click()">click to browse</a>
+          </p>
+          <span class="drop-hint">JPEG, PNG, GIF, PDF — Max 10 MB each</span>
+          <input
+            #fileInput
+            type="file"
+            multiple
+            accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx"
+            (change)="onFilesSelected($event)"
+            class="file-input-hidden" />
+        </div>
+
+        <div *ngIf="fileError" class="file-error">⚠️ {{ fileError }}</div>
+
+        <!-- Thumbnail Previews -->
+        <div *ngIf="selectedFiles.length > 0" class="thumbnail-section">
+          <span class="thumbnail-label">Selected ({{ selectedFiles.length }}/5): <em class="edit-hint">Click to edit</em></span>
+          <div class="thumbnail-grid">
+            <div *ngFor="let file of selectedFiles; let i = index" class="thumbnail-item" (click)="openImageEditorForFile(i, $event)">
+              <img *ngIf="file.type.startsWith('image/')" [src]="getPreviewUrl(file)" class="thumbnail-img" />
+              <div *ngIf="!file.type.startsWith('image/')" class="thumbnail-file">📄</div>
+              <button class="thumbnail-remove" (click)="removeFile(i); $event.stopPropagation()" title="Remove">✕</button>
+              <span class="thumbnail-name">{{ file.name | slice:0:12 }}{{ file.name.length > 12 ? '...' : '' }}</span>
+              <span class="thumbnail-size">{{ (file.size / 1024).toFixed(0) }} KB</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Editor Overlay -->
+        <div *ngIf="showAttachmentEditor" class="image-editor-overlay">
+          <div class="image-editor-panel">
+            <div class="image-editor-header">
+              <h3>✏️ Edit Image</h3>
+              <p>Crop, draw, add text, shapes, and filters</p>
+            </div>
+            <div id="attachment-editor-container" class="attachment-editor-mount"></div>
+            <div class="image-editor-actions">
+              <button class="btn btn-secondary" (click)="closeAttachmentEditor()">Discard</button>
+              <button class="btn btn-primary" (click)="applyAttachmentEdit()" [disabled]="isApplyingAttachmentEdit">
+                {{ isApplyingAttachmentEdit ? '⏳ Applying...' : '✅ Apply Changes' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="reply-actions">
+          <button
+            class="btn btn-primary"
+            (click)="submitReply()"
+            [disabled]="isSubmitting || replyControl.invalid">
+            {{ isSubmitting ? '⏳ Sending...' : '🚀 Send Reply' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

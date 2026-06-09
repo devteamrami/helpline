@@ -1,0 +1,131 @@
+<div class="task-time-logs">
+  <!-- User Summaries -->
+  <div class="user-summaries" *ngIf="userSummaries.length > 0">
+    <h3 class="section-title">
+      <mat-icon>people</mat-icon>
+      Time by Team Member
+    </h3>
+    <div class="summary-cards">
+      <mat-card *ngFor="let summary of userSummaries" class="summary-card">
+        <mat-card-content>
+          <div class="user-info">
+            <div class="user-avatar">
+              {{ summary.userName.charAt(0).toUpperCase() }}
+            </div>
+            <div class="user-details">
+              <div class="user-name">
+                {{ summary.userName }}
+                <mat-chip *ngIf="summary.isActive" class="active-chip">
+                  <mat-icon>schedule</mat-icon>
+                  Working
+                </mat-chip>
+              </div>
+              <div class="user-email">{{ summary.userEmail }}</div>
+            </div>
+          </div>
+          <div class="time-stats">
+            <div class="stat">
+              <span class="stat-value">{{ summary.totalHours }}h</span>
+              <span class="stat-label">Total Time</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">{{ summary.logCount }}</span>
+              <span class="stat-label">Sessions</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Time Logs Table -->
+  <div class="time-logs-table">
+    <h3 class="section-title">
+      <mat-icon>history</mat-icon>
+      Time Log History
+    </h3>
+
+    <div *ngIf="isLoading" class="loading-state">
+      <mat-icon>schedule</mat-icon>
+      <p>Loading time logs...</p>
+    </div>
+
+    <div *ngIf="!isLoading && timeLogs.length === 0" class="empty-state">
+      <mat-icon>schedule</mat-icon>
+      <p>No time logs yet</p>
+      <span>Start working on this task to track time</span>
+    </div>
+
+    <table mat-table [dataSource]="timeLogs" *ngIf="!isLoading && timeLogs.length > 0">
+      <!-- User Column -->
+      <ng-container matColumnDef="user">
+        <th mat-header-cell *matHeaderCellDef>Team Member</th>
+        <td mat-cell *matCellDef="let log">
+          <div class="user-cell">
+            <div class="user-avatar-small">
+              {{ getUserName(log).charAt(0).toUpperCase() }}
+            </div>
+            <div class="user-info-small">
+              <div class="user-name-small">{{ getUserName(log) }}</div>
+              <div class="user-email-small">{{ log.user.email }}</div>
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Start Time Column -->
+      <ng-container matColumnDef="startTime">
+        <th mat-header-cell *matHeaderCellDef>Start Time</th>
+        <td mat-cell *matCellDef="let log">
+          <div class="time-cell">
+            <mat-icon class="time-icon">play_arrow</mat-icon>
+            {{ formatDateTime(log.startTime) }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- End Time Column -->
+      <ng-container matColumnDef="endTime">
+        <th mat-header-cell *matHeaderCellDef>End Time</th>
+        <td mat-cell *matCellDef="let log">
+          <div class="time-cell" *ngIf="log.endTime">
+            <mat-icon class="time-icon">stop</mat-icon>
+            {{ formatDateTime(log.endTime) }}
+          </div>
+          <span class="active-indicator" *ngIf="!log.endTime">
+            <mat-icon>schedule</mat-icon>
+            In Progress
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Duration Column -->
+      <ng-container matColumnDef="duration">
+        <th mat-header-cell *matHeaderCellDef>Duration</th>
+        <td mat-cell *matCellDef="let log">
+          <span class="duration-badge" [class.active]="isActiveLog(log)">
+            {{ formatDuration(log.durationMinutes) }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let log">
+          <mat-chip *ngIf="isActiveLog(log)" class="status-chip active">
+            <mat-icon>schedule</mat-icon>
+            Active
+          </mat-chip>
+          <mat-chip *ngIf="!isActiveLog(log)" class="status-chip completed">
+            <mat-icon>check_circle</mat-icon>
+            Completed
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.active-row]="isActiveLog(row)"></tr>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<div class="dialog-overlay" (click)="close()">
+  <div class="dialog-container" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="dialog-header">
+      <h2 class="dialog-title">{{ getTitle() }}</h2>
+      <button class="btn-close" (click)="close()" type="button">
+        <span class="close-icon">✕</span>
+      </button>
+    </div>
+
+    <!-- Error Banner -->
+    @if (errorMessage) {
+      <div class="error-banner">
+        <span class="error-icon">⚠️</span>
+        <p>{{ errorMessage }}</p>
+      </div>
+    }
+
+    <!-- Form -->
+    <form [formGroup]="faqForm" (ngSubmit)="onSubmit()" class="dialog-form">
+
+      <!-- Question -->
+      <div class="form-group">
+        <label for="faq-question" class="form-label">
+          Question <span class="required">*</span>
+        </label>
+        <input
+          id="faq-question"
+          type="text"
+          formControlName="question"
+          class="form-input"
+          [class.error]="faqForm.get('question')?.invalid && faqForm.get('question')?.touched"
+          placeholder="Enter the FAQ question" />
+        @if (getErrorMessage('question')) {
+          <span class="error-message">{{ getErrorMessage('question') }}</span>
+        }
+        <span class="hint-text">{{ questionLength() }} / 500 characters</span>
+      </div>
+
+      <!-- Answer — CKEditor 5 -->
+      <div class="form-group">
+        <label class="form-label">
+          Answer <span class="required">*</span>
+        </label>
+        <p class="editor-hint">
+          💡 Use the toolbar to format text, add lists, tables, images and more.
+          Click any inserted image to open the image editor (crop, draw, annotate).
+        </p>
+        <div class="editor-wrapper" dir="ltr">
+          <ckeditor
+            [editor]="Editor"
+            [config]="editorConfig"
+            [data]="answerHtml"
+            (ready)="onEditorReady($event)"
+            (change)="onEditorChange($event)">
+          </ckeditor>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-secondary" (click)="close()" [disabled]="isSubmitting">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+          @if (isSubmitting) {
+            <span class="spinner-small"></span>
+          }
+          {{ getSubmitButtonText() }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- tui-image-editor overlay -->
+@if (showImageEditor) {
+  <div class="image-editor-overlay">
+    <div class="image-editor-panel">
+      <div class="image-editor-header">
+        <h3>Edit Image</h3>
+        <p>Use the tools below to crop, draw, add text, shapes, and apply filters.</p>
+      </div>
+      @if (isLoadingImageForEditor) {
+        <div class="image-editor-loading">
+          <div class="editor-spinner"></div>
+          <span>Loading image editor...</span>
+        </div>
+      }
+      <div id="tui-editor-container" class="tui-editor-mount"></div>
+      <div class="image-editor-actions">
+        <button class="btn btn-secondary" type="button" (click)="closeImageEditor()" [disabled]="isApplyingEdit">
+          Discard Changes
+        </button>
+        <button class="btn btn-primary" type="button" (click)="applyImageEdit()" [disabled]="isApplyingEdit">
+          @if (isApplyingEdit) {
+            <span class="spinner-small"></span>
+            Saving edited image...
+          } @else {
+            ✅ Apply & Insert
+          }
+        </button>
+      </div>
+      @if (applyEditError) {
+        <div class="apply-edit-error">⚠️ {{ applyEditError }}</div>
+      }
+    </div>
+  </div>
+}

@@ -1,0 +1,208 @@
+<div class="task-detail-container">
+  <!-- Loading State -->
+  <ng-container *ngIf="isLoading">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading task details...</p>
+    </div>
+  </ng-container>
+
+  <!-- Error State -->
+  <ng-container *ngIf="!isLoading && errorMessage">
+    <div class="error-state">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ errorMessage }}</p>
+      <button mat-raised-button color="primary" (click)="loadTask()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+      <button mat-button (click)="goBack()">Go Back</button>
+    </div>
+  </ng-container>
+
+  <!-- Task Content -->
+  <ng-container *ngIf="!isLoading && !errorMessage && task">
+    <div class="task-content">
+
+    <!-- Compact Top Bar: Title + Stats + Actions all in one -->
+    <div class="task-top-bar">
+
+      <!-- Row 1: Back button (only outside dialog) -->
+      <button *ngIf="!isInDialog" class="btn-back" (click)="goBack()">
+        <span class="back-icon">←</span> Back to Project
+      </button>
+
+      <!-- Row 2: Title + Badges + Action Buttons in one line -->
+      <div class="top-bar-main">
+        <div class="title-badges">
+          <h1 class="task-title">{{ task.title }}</h1>
+          <div class="task-badges">
+            <mat-chip class="status-chip" [ngClass]="getStatusClass(task.status)">{{ task.status }}</mat-chip>
+            <mat-chip class="priority-chip" [ngClass]="getPriorityClass(task.priority)">{{ task.priority }}</mat-chip>
+          </div>
+        </div>
+
+        <!-- Inline Action Buttons -->
+        <div class="inline-actions">
+          <app-time-tracking-widget
+            [projectId]="projectId"
+            [taskId]="taskId"
+            [taskStatus]="task.status"
+            [currentUserId]="currentUserId"
+            [isAssignedToCurrentUser]="isAssignedToCurrentUser()"
+            (taskStarted)="onTaskUpdated()"
+            (taskPaused)="onTaskUpdated()"
+            (taskCompleted)="onTaskUpdated()"
+          ></app-time-tracking-widget>
+        </div>
+      </div>
+
+      <!-- Row 3: Stats strip -->
+      <div class="stats-strip">
+        <div class="stat-item">
+          <mat-icon class="stat-icon">schedule</mat-icon>
+          <div class="stat-body">
+            <span class="stat-label">Estimated</span>
+            <span class="stat-value">{{ task.estimatedHours || '-' }}<span class="stat-unit" *ngIf="task.estimatedHours">h</span></span>
+          </div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <mat-icon class="stat-icon">timer</mat-icon>
+          <div class="stat-body">
+            <span class="stat-label">Actual</span>
+            <span class="stat-value">{{ task.actualHours || 0 }}<span class="stat-unit">h</span></span>
+          </div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <mat-icon class="stat-icon">trending_up</mat-icon>
+          <div class="stat-body">
+            <span class="stat-label">Progress</span>
+            <span class="stat-value">{{ getProgressPercentage() }}<span class="stat-unit">%</span></span>
+          </div>
+        </div>
+        <div class="stat-divider" *ngIf="task.estimatedHours"></div>
+        <div class="stat-item" *ngIf="task.estimatedHours">
+          <mat-icon class="stat-icon">compare_arrows</mat-icon>
+          <div class="stat-body">
+            <span class="stat-label">Variance</span>
+            <span class="stat-value" [class.over-estimate]="task.actualHours > task.estimatedHours">
+              {{ (task.actualHours - (task.estimatedHours || 0)).toFixed(1) }}<span class="stat-unit">h</span>
+            </span>
+          </div>
+        </div>
+        <!-- Progress bar inline -->
+        <div class="stat-progress" *ngIf="task.estimatedHours">
+          <div class="mini-progress-bar">
+            <div class="mini-progress-fill" [style.width.%]="getProgressPercentage()" [ngClass]="getProgressClass()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <mat-tab-group class="task-tabs" animationDuration="300ms">
+      <!-- Details Tab -->
+      <mat-tab label="Details">
+        <div class="tab-content">
+          <div class="detail-section">
+            <h3 class="section-title">
+              <mat-icon>description</mat-icon>
+              Description
+            </h3>
+            <div class="description-content" *ngIf="task.description">
+              {{ task.description }}
+            </div>
+            <div class="empty-description" *ngIf="!task.description">
+              No description provided
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3 class="section-title">
+              <mat-icon>info</mat-icon>
+              Task Information
+            </h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Assignees</span>
+                <!-- Multiple assignees display -->
+                <div class="assignees-list" *ngIf="task.assignees && task.assignees.length > 0">
+                  <div class="assignee-badge" *ngFor="let assignee of task.assignees">
+                    <div class="assignee-avatar-small">
+                      {{ getAssigneeInitials(assignee) }}
+                    </div>
+                    <span class="assignee-name-small">{{ getAssigneeDisplayName(assignee) }}</span>
+                  </div>
+                </div>
+                <!-- Fallback to single assignee (backward compatibility) -->
+                <div class="assignee-info" *ngIf="(!task.assignees || task.assignees.length === 0) && task.assignee">
+                  <div class="assignee-avatar">
+                    {{ getAssigneeName().charAt(0).toUpperCase() }}
+                  </div>
+                  <span class="assignee-name">{{ getAssigneeName() }}</span>
+                </div>
+                <span class="unassigned" *ngIf="(!task.assignees || task.assignees.length === 0) && !task.assignee">Unassigned</span>
+              </div>
+
+              <div class="info-item">
+                <span class="info-label">End Date</span>
+                <span class="info-value">{{ formatDate(task.dueDate) }}</span>
+              </div>
+
+              <div class="info-item">
+                <span class="info-label">Created By</span>
+                <span class="info-value" *ngIf="task.creator">
+                  {{ task.creator.firstName }} {{ task.creator.lastName }}
+                </span>
+              </div>
+
+              <div class="info-item">
+                <span class="info-label">Created At</span>
+                <span class="info-value">{{ formatDateTime(task.createdAt) }}</span>
+              </div>
+
+              <div class="info-item">
+                <span class="info-label">Last Updated</span>
+                <span class="info-value">{{ formatDateTime(task.updatedAt) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Time Logs Tab -->
+      <mat-tab label="Time Logs">
+        <div class="tab-content">
+          <app-task-time-logs
+            [projectId]="projectId"
+            [taskId]="taskId"
+          ></app-task-time-logs>
+        </div>
+      </mat-tab>
+
+      <!-- Comments Tab -->
+      <mat-tab label="Comments">
+        <div class="tab-content">
+          <app-task-comments
+            [projectId]="projectId"
+            [taskId]="taskId"
+            [currentUserId]="currentUserId"
+          ></app-task-comments>
+        </div>
+      </mat-tab>
+
+      <!-- History Tab -->
+      <mat-tab label="History">
+        <div class="tab-content">
+          <app-task-history
+            [projectId]="projectId"
+            [taskId]="taskId"
+          ></app-task-history>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+    </div>
+  </ng-container>
+</div>

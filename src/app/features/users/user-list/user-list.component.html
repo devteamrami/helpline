@@ -1,0 +1,249 @@
+<div class="user-list-container">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1>User Management</h1>
+        <p>Manage system users and their roles</p>
+      </div>
+      <div class="header-actions">
+        @if (canEditUsers()) {
+          <button class="btn-primary" (click)="openCreateDialog()">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            <span>Add User</span>
+          </button>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- Filters -->
+  <section class="filters-section">
+    <div class="filters-content">
+      <!-- Search -->
+      <div class="filter-group search-group">
+        <div class="search-input">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+          </svg>
+          <input
+            type="text"
+            [formControl]="searchControl"
+            placeholder="Search by name, email, or username..."
+          />
+        </div>
+      </div>
+
+      <!-- Role Filter -->
+      <div class="filter-group">
+        <label>Role</label>
+        <select [formControl]="roleFilter">
+          <option value="">All Roles</option>
+          @for (role of roles; track role) {
+            <option [value]="role">{{ role | titlecase }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="filter-group">
+        <label>Status</label>
+        <select [formControl]="statusFilter">
+          @for (status of statuses; track status.value) {
+            <option [value]="status.value">{{ status.label }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Results Count -->
+      <div class="results-count">
+        <span>{{ totalItems }} {{ totalItems === 1 ? 'user' : 'users' }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading users...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (errorMessage && !isLoading) {
+    <div class="error-container">
+      <svg width="48" height="48" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+      </svg>
+      <h3>Failed to Load Users</h3>
+      <p>{{ errorMessage }}</p>
+      <button class="btn-secondary" (click)="retry()">Try Again</button>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading && !errorMessage && users.length === 0) {
+    <div class="empty-container">
+      <svg width="64" height="64" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+      </svg>
+      <h3>No Users Found</h3>
+      <p>Try adjusting your search or filters</p>
+    </div>
+  }
+
+  <!-- Users Table -->
+  @if (!isLoading && !errorMessage && users.length > 0) {
+    <section class="table-section">
+      <div class="table-container">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th (click)="onSortChange('role')" class="sortable">
+                Role
+                @if (sortBy === 'role') {
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" [class.rotate-180]="sortOrder === 'desc'">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                  </svg>
+                }
+              </th>
+              <th>Status</th>
+              <th (click)="onSortChange('lastLogin')" class="sortable">
+                Last Login
+                @if (sortBy === 'lastLogin') {
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" [class.rotate-180]="sortOrder === 'desc'">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                  </svg>
+                }
+              </th>
+              <th (click)="onSortChange('createdAt')" class="sortable">
+                Created
+                @if (sortBy === 'createdAt') {
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" [class.rotate-180]="sortOrder === 'desc'">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                  </svg>
+                }
+              </th>
+              <th class="actions-column">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users; track user.id) {
+              <tr (click)="viewUser(user.id)" class="user-row">
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar">{{ getUserInitials(user) }}</div>
+                    <div class="user-info">
+                      <div class="user-name">
+                        {{ user.firstName && user.lastName ? user.firstName + ' ' + user.lastName : user.username }}
+                      </div>
+                      <div class="user-email">{{ user.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="role-badge" [ngClass]="getRoleBadgeClass(user.role)">
+                    {{ user.role || 'No Role' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge" [ngClass]="getStatusBadgeClass(user.isActive)">
+                    {{ user.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td class="date-cell">{{ formatDate(user.lastLogin) }}</td>
+                <td class="date-cell">{{ formatDate(user.createdAt) }}</td>
+                <td class="actions-cell" (click)="$event.stopPropagation()">
+                  <div class="action-buttons">
+                    <button
+                      class="btn-icon"
+                      (click)="viewUser(user.id)"
+                      title="View Details"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                      </svg>
+                    </button>
+                    @if (canEditUsers()) {
+                      <button
+                        class="btn-icon"
+                        (click)="openEditDialog(user)"
+                        title="Edit User"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                        </svg>
+                      </button>
+                    }
+                    @if (canDeactivateUsers() && user.isActive) {
+                      <button
+                        class="btn-icon btn-danger"
+                        (click)="deactivateUser(user)"
+                        title="Deactivate User"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
+                        </svg>
+                      </button>
+                    }
+                    @if (canEditUsers() && !user.isActive) {
+                      <button
+                        class="btn-icon btn-success"
+                        (click)="activateUser(user)"
+                        title="Activate User"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages > 1) {
+        <div class="pagination">
+          <button
+            class="pagination-btn"
+            (click)="onPageChange(currentPage - 1)"
+            [disabled]="currentPage === 1"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+
+          @for (page of getPaginationRange(); track page) {
+            <button
+              class="pagination-btn"
+              [class.active]="page === currentPage"
+              (click)="onPageChange(page)"
+            >
+              {{ page }}
+            </button>
+          }
+
+          <button
+            class="pagination-btn"
+            (click)="onPageChange(currentPage + 1)"
+            [disabled]="currentPage === totalPages"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+      }
+    </section>
+  }
+</div>

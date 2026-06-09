@@ -1,0 +1,116 @@
+.time-tracking-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.timer-display {
+  display: none;
+}
+
+// Compact inline buttons
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+
+  .action-btn {
+    height: 32px;
+    padding: 0 14px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+
+    &:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  .start-btn {
+    background: #48bb78;
+    color: white;
+    &:not(:disabled):hover { background: #38a169; }
+  }
+
+  .pause-btn {
+    background: #ed8936;
+    color: white;
+    &:not(:disabled):hover { background: #dd6b20; }
+  }
+
+  .complete-btn {
+    background: #4299e1;
+    color: white;
+    &:not(:disabled):hover { background: #3182ce; }
+  }
+}
+
+// Status message — slim pill below buttons
+.status-messages {
+  .status-message {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+
+    mat-icon {
+      font-size: 13px;
+      width: 13px;
+      height: 13px;
+    }
+
+    &.info {
+      background: #ebf8ff;
+      color: #2b6cb0;
+      mat-icon { color: #2b6cb0; }
+    }
+
+    &.success {
+      background: #f0fff4;
+      color: #276749;
+      mat-icon { color: #276749; }
+    }
+
+    &.working {
+      background: #eef2ff;
+      color: #4338ca;
+      mat-icon { color: #4338ca; }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-wrap: wrap;
+
+    .action-btn {
+      flex: 1;
+      min-width: 80px;
+    }
+  }
+}

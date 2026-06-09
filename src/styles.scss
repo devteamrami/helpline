@@ -1,0 +1,365 @@
+/**
+ * Global Styles
+ * Ramiscope Project Management System
+ */
+
+/* Import Angular Material Prebuilt Theme */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/* Fix Material Select Dropdown Overlay */
+.cdk-overlay-container {
+  z-index: 9999 !important;
+}
+
+.cdk-overlay-pane {
+  z-index: 9999 !important;
+}
+
+.mat-mdc-select-panel {
+  max-height: 400px !important;
+}
+
+/* Reset and Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #f7fafc;
+  color: #2d3748;
+  line-height: 1.6;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  color: #1a202c;
+}
+
+a {
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: #764ba2;
+}
+
+/* Utility Classes */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-1 {
+  margin-top: 0.5rem;
+}
+.mt-2 {
+  margin-top: 1rem;
+}
+.mt-3 {
+  margin-top: 1.5rem;
+}
+.mt-4 {
+  margin-top: 2rem;
+}
+
+.mb-1 {
+  margin-bottom: 0.5rem;
+}
+.mb-2 {
+  margin-bottom: 1rem;
+}
+.mb-3 {
+  margin-bottom: 1.5rem;
+}
+.mb-4 {
+  margin-bottom: 2rem;
+}
+
+/* Animation Classes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+/* Loading Spinner */
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+}
+
+.btn-secondary {
+  background: #e2e8f0;
+  color: #2d3748;
+
+  &:hover:not(:disabled) {
+    background: #cbd5e0;
+  }
+}
+
+/* Card Styles */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Form Styles */
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  &.error {
+    border-color: #fc8181;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .container {
+    padding: 0 0.75rem;
+  }
+}
+
+/* SweetAlert2 Custom Theme */
+.swal2-popup {
+  border-radius: 16px !important;
+  padding: 2rem !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
+}
+
+.swal2-title {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #1a202c !important;
+  margin-bottom: 1rem !important;
+}
+
+.swal2-html-container {
+  font-size: 1rem !important;
+  color: #4a5568 !important;
+  line-height: 1.6 !important;
+}
+
+.swal2-icon {
+  margin: 1rem auto !important;
+}
+
+.swal2-confirm {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+  transition: all 0.2s !important;
+}
+
+.swal2-confirm:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+}
+
+.swal2-cancel {
+  background: #e2e8f0 !important;
+  color: #2d3748 !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 600 !important;
+  transition: all 0.2s !important;
+}
+
+.swal2-cancel:hover {
+  background: #cbd5e0 !important;
+}
+
+.swal2-actions {
+  gap: 0.75rem !important;
+  margin-top: 1.5rem !important;
+}
+
+/* Toast notifications */
+.swal2-toast {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.swal2-toast .swal2-title {
+  font-size: 1rem !important;
+  margin: 0 !important;
+}
+
+.swal2-toast .swal2-icon {
+  margin: 0 0.5rem 0 0 !important;
+}
+
+/* Custom wide popup */
+.swal-wide {
+  max-width: 500px !important;
+}
+
+/* ── CKEditor 5 — force LTR regardless of body/page direction ── */
+/* tui-image-editor sets dir="rtl" on body which bleeds into CKEditor */
+.ck.ck-editor__editable,
+.ck.ck-editor__editable p,
+.ck.ck-editor__editable li,
+.ck.ck-editor__editable h1,
+.ck.ck-editor__editable h2,
+.ck.ck-editor__editable h3,
+.ck.ck-editor__editable h4,
+.ck.ck-editor__editable h5,
+.ck.ck-editor__editable h6,
+.ck-content,
+.ck-content p {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: plaintext;
+}
+
+/* ── CKEditor 5 — editor area size ── */
+.ck.ck-editor__editable.ck-editor__editable_inline {
+  min-height: 380px !important;
+  max-height: 55vh !important;
+  overflow-y: auto !important;
+}
+
+@media (max-width: 768px) {
+  .ck.ck-editor__editable.ck-editor__editable_inline {
+    min-height: 220px !important;
+    max-height: 40vh !important;
+  }
+}

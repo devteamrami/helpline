@@ -1,0 +1,71 @@
+<div class="time-tracking-widget">
+  <!-- Active Timer Display -->
+  <div class="timer-display" *ngIf="activeTimeLog && activeTimeLog.isActive">
+    <mat-icon class="timer-icon">schedule</mat-icon>
+    <span class="timer-text">{{ elapsedTime }}</span>
+    <span class="timer-label">elapsed</span>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <!-- Start Button -->
+    <button
+      mat-raised-button
+      color="primary"
+      class="action-btn start-btn"
+      [disabled]="!canStartTask()"
+      (click)="onStartTask()"
+      matTooltip="Start working on this task"
+      [matTooltipDisabled]="!canStartTask()"
+    >
+      <mat-icon>play_arrow</mat-icon>
+      <span>Start</span>
+    </button>
+
+    <!-- Pause Button -->
+    <button
+      mat-raised-button
+      color="warn"
+      class="action-btn pause-btn"
+      [disabled]="!canPauseTask()"
+      (click)="onPauseTask()"
+      matTooltip="Pause working on this task"
+      [matTooltipDisabled]="!canPauseTask()"
+    >
+      <mat-icon>pause</mat-icon>
+      <span>Pause</span>
+    </button>
+
+    <!-- Complete Button -->
+    <button
+      mat-raised-button
+      color="accent"
+      class="action-btn complete-btn"
+      [disabled]="!canCompleteTask()"
+      (click)="onCompleteTask()"
+      matTooltip="Mark task as complete"
+      [matTooltipDisabled]="!canCompleteTask()"
+    >
+      <mat-icon>check_circle</mat-icon>
+      <span>Complete</span>
+    </button>
+  </div>
+
+  <!-- Status Messages -->
+  <div class="status-messages">
+    <div class="status-message info" *ngIf="!isAssignedToCurrentUser && effectiveStatus !== 'Done'">
+      <mat-icon>info</mat-icon>
+      <span>Only assigned team members can track time</span>
+    </div>
+
+    <div class="status-message success" *ngIf="effectiveStatus === 'Done'">
+      <mat-icon>check_circle</mat-icon>
+      <span>Task completed</span>
+    </div>
+
+    <div class="status-message working" *ngIf="activeTimeLog && activeTimeLog.isActive && effectiveStatus !== 'Done'">
+      <mat-icon>schedule</mat-icon>
+      <span>You are currently working on this task</span>
+    </div>
+  </div>
+</div>

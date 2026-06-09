@@ -1,0 +1,172 @@
+<div class="project-list-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">Projects</h1>
+    <button 
+      *ngIf="canCreateProject" 
+      class="btn btn-primary"
+      (click)="openCreateDialog()">
+      <span class="icon">+</span>
+      Add Project
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [formControl]="searchControl"
+        placeholder="Search projects..."
+        class="search-input">
+      <span class="search-icon">🔍</span>
+    </div>
+
+    <div class="filter-group">
+      <label for="statusFilter">Status:</label>
+      <select 
+        id="statusFilter"
+        [formControl]="statusFilter"
+        class="filter-select">
+        <option value="">All Statuses</option>
+        <option *ngFor="let status of statusOptions" [value]="status">
+          {{ status }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading projects...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage && !isLoading" class="error-banner">
+    <p>{{ errorMessage }}</p>
+    <button class="btn btn-secondary" (click)="retry()">Retry</button>
+  </div>
+
+  <!-- Projects Table -->
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="projects-table">
+      <thead>
+        <tr>
+          <th (click)="onSort('name')" class="sortable">
+            Name
+            <span class="sort-icon" *ngIf="sortBy === 'name'">
+              {{ sortOrder === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th (click)="onSort('code')" class="sortable">
+            Code
+            <span class="sort-icon" *ngIf="sortBy === 'code'">
+              {{ sortOrder === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th (click)="onSort('status')" class="sortable">
+            Status
+            <span class="sort-icon" *ngIf="sortBy === 'status'">
+              {{ sortOrder === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th (click)="onSort('start_date')" class="sortable">
+            Start Date
+            <span class="sort-icon" *ngIf="sortBy === 'start_date'">
+              {{ sortOrder === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th (click)="onSort('end_date')" class="sortable">
+            End Date
+            <span class="sort-icon" *ngIf="sortBy === 'end_date'">
+              {{ sortOrder === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th>Members</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr 
+          *ngFor="let project of projects" 
+          class="project-row"
+          (click)="viewProject(project.id)">
+          <td class="project-name">{{ project.name }}</td>
+          <td class="project-code">{{ project.code }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(project.status)">
+              {{ project.status }}
+            </span>
+          </td>
+          <td>{{ project.startDate ? (project.startDate | date: 'MMM d, y') : '-' }}</td>
+          <td>{{ project.endDate ? (project.endDate | date: 'MMM d, y') : '-' }}</td>
+          <td class="member-count">{{ project.memberCount }}</td>
+          <td class="actions-cell">
+            <button 
+              *ngIf="canEditProject"
+              class="btn-icon"
+              (click)="openEditDialog(project, $event)"
+              title="Edit">
+              ✏️
+            </button>
+            <button 
+              *ngIf="canArchiveProject && project.status !== 'Archived'"
+              class="btn-icon"
+              (click)="archiveProject(project, $event)"
+              title="Archive">
+              📦
+            </button>
+            <button 
+              *ngIf="canArchiveProject && project.status === 'Archived'"
+              class="btn-icon"
+              (click)="unarchiveProject(project, $event)"
+              title="Unarchive">
+              📂
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="projects.length === 0" class="empty-state">
+      <p>No projects found</p>
+      <button 
+        *ngIf="canCreateProject"
+        class="btn btn-primary"
+        (click)="openCreateDialog()">
+        Create Your First Project
+      </button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && !errorMessage && totalPages > 1" class="pagination">
+    <button 
+      class="btn-page"
+      [disabled]="currentPage === 1"
+      (click)="onPageChange(currentPage - 1)">
+      Previous
+    </button>
+
+    <button 
+      *ngFor="let page of getPageNumbers()"
+      class="btn-page"
+      [class.active]="page === currentPage"
+      (click)="onPageChange(page)">
+      {{ page }}
+    </button>
+
+    <button 
+      class="btn-page"
+      [disabled]="currentPage === totalPages"
+      (click)="onPageChange(currentPage + 1)">
+      Next
+    </button>
+
+    <span class="page-info">
+      Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total)
+    </span>
+  </div>
+</div>

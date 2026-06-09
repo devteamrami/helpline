@@ -1,0 +1,184 @@
+<div class="dialog-overlay" (click)="close()">
+  <div class="dialog-container" (click)="$event.stopPropagation()">
+    <div class="dialog-header">
+      <h2>{{ data.mode === 'create' ? 'Create Task' : 'Edit Task' }}</h2>
+      <button class="btn-close" (click)="close()" [disabled]="isSubmitting">×</button>
+    </div>
+
+    <div class="dialog-body">
+      <form [formGroup]="taskForm" (ngSubmit)="onSubmit()">
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-message">
+          <span class="error-icon">⚠️</span>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Title -->
+        <div class="form-group">
+          <label for="title">
+            Title <span class="required">*</span>
+          </label>
+          <input 
+            type="text"
+            id="title"
+            formControlName="title"
+            placeholder="Enter task title"
+            [class.error]="hasError('title')">
+          <div *ngIf="hasError('title')" class="field-error">
+            {{ getErrorMessage('title') }}
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea 
+            id="description"
+            formControlName="description"
+            placeholder="Enter task description"
+            rows="4"
+            [class.error]="hasError('description')"></textarea>
+          <div *ngIf="hasError('description')" class="field-error">
+            {{ getErrorMessage('description') }}
+          </div>
+        </div>
+
+        <!-- Status and Priority Row -->
+        <div class="form-row">
+          <!-- Status -->
+          <div class="form-group">
+            <label for="status">
+              Status <span class="required">*</span>
+            </label>
+            <select 
+              id="status"
+              formControlName="status"
+              [class.error]="hasError('status')">
+              <option *ngFor="let status of statusOptions" [value]="status">
+                {{ status }}
+              </option>
+            </select>
+            <div *ngIf="hasError('status')" class="field-error">
+              {{ getErrorMessage('status') }}
+            </div>
+          </div>
+
+          <!-- Priority -->
+          <div class="form-group">
+            <label for="priority">
+              Priority <span class="required">*</span>
+            </label>
+            <select 
+              id="priority"
+              formControlName="priority"
+              [class.error]="hasError('priority')">
+              <option *ngFor="let priority of priorityOptions" [value]="priority">
+                {{ priority }}
+              </option>
+            </select>
+            <div *ngIf="hasError('priority')" class="field-error">
+              {{ getErrorMessage('priority') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignee and Due Date Row -->
+        <div class="form-row">
+          <!-- Multiple Assignees with Material Select -->
+          <div class="form-group assignee-field">
+            <label>Assignees</label>
+            
+            <mat-select 
+              formControlName="assigneeIds"
+              multiple
+              placeholder="Select team members"
+              [disabled]="isLoadingMembers"
+              class="custom-mat-select">
+              <mat-select-trigger>
+                @if (taskForm.get('assigneeIds')?.value?.length === 0) {
+                  <span>No assignees selected</span>
+                }
+                @if (taskForm.get('assigneeIds')?.value?.length === 1) {
+                  <span>{{ getSelectedAssigneeName(taskForm.get('assigneeIds')?.value[0]) }}</span>
+                }
+                @if (taskForm.get('assigneeIds')?.value?.length > 1) {
+                  <span>{{ taskForm.get('assigneeIds')?.value?.length }} team members selected</span>
+                }
+              </mat-select-trigger>
+              
+              @for (member of projectMembers; track member.id) {
+                <mat-option [value]="member.id">
+                  <div class="member-option">
+                    <div class="member-avatar">
+                      {{ getMemberInitials(member) }}
+                    </div>
+                    <div class="member-info">
+                      <div class="member-name">{{ getMemberDisplayName(member) }}</div>
+                      <div class="member-email">{{ member.email }}</div>
+                    </div>
+                  </div>
+                </mat-option>
+              }
+            </mat-select>
+            
+            @if (isLoadingMembers) {
+              <div class="field-hint">Loading project members...</div>
+            }
+            <div class="field-hint">Click to select/deselect team members</div>
+          </div>
+
+          <!-- End Date -->
+          <div class="form-group">
+            <label for="dueDate">End Date</label>
+            <input 
+              type="date"
+              id="dueDate"
+              formControlName="dueDate">
+          </div>
+        </div>
+
+        <!-- Estimated Hours -->
+        <div class="form-group">
+          <label for="estimatedHours">Estimated Hours</label>
+          <input 
+            type="number"
+            id="estimatedHours"
+            formControlName="estimatedHours"
+            placeholder="Enter estimated hours (e.g., 8)"
+            min="0"
+            max="9999"
+            step="0.5"
+            [class.error]="hasError('estimatedHours')">
+          <div class="field-hint">
+            Optional: Estimate how many hours this task will take
+          </div>
+          <div *ngIf="hasError('estimatedHours')" class="field-error">
+            {{ getErrorMessage('estimatedHours') }}
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="dialog-actions">
+          <button 
+            type="button" 
+            class="btn-secondary" 
+            (click)="close()"
+            [disabled]="isSubmitting">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn-primary"
+            [disabled]="taskForm.invalid || isSubmitting">
+            <span *ngIf="!isSubmitting">
+              {{ data.mode === 'create' ? 'Create Task' : 'Update Task' }}
+            </span>
+            <span *ngIf="isSubmitting">
+              {{ data.mode === 'create' ? 'Creating...' : 'Updating...' }}
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

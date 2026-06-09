@@ -1,0 +1,161 @@
+<div class="dialog-overlay" (click)="close()">
+  <div class="dialog-container" (click)="$event.stopPropagation()">
+    <!-- Dialog Header -->
+    <div class="dialog-header">
+      <h2>{{ mode === 'create' ? 'Create New User' : 'Edit User' }}</h2>
+      <button class="close-button" (click)="close()">
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Dialog Content -->
+    <div class="dialog-content">
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+        <!-- Error Message -->
+        @if (errorMessage) {
+          <div class="error-banner">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+
+        <!-- Create Mode Fields -->
+        @if (mode === 'create') {
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">Email <span class="required">*</span></label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="user@example.com"
+              [class.error]="hasError('email', 'required') || hasError('email', 'email')"
+            />
+            @if (getErrorMessage('email')) {
+              <span class="error-message">{{ getErrorMessage('email') }}</span>
+            }
+          </div>
+
+          <!-- Username -->
+          <div class="form-group">
+            <label for="username">Username <span class="required">*</span></label>
+            <input
+              id="username"
+              type="text"
+              formControlName="username"
+              placeholder="johndoe"
+              [class.error]="hasError('username', 'required') || hasError('username', 'pattern') || hasError('username', 'minlength')"
+            />
+            @if (getErrorMessage('username')) {
+              <span class="error-message">{{ getErrorMessage('username') }}</span>
+            }
+            <span class="field-hint">3-100 characters, letters, numbers, dots, underscores, hyphens</span>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password">Password <span class="required">*</span></label>
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              placeholder="••••••••"
+              [class.error]="hasError('password', 'required') || hasError('password', 'pattern') || hasError('password', 'minlength')"
+            />
+            @if (getErrorMessage('password')) {
+              <span class="error-message">{{ getErrorMessage('password') }}</span>
+            }
+            
+            <!-- Password Strength Indicator -->
+            @if (userForm.get('password')?.value) {
+              <div class="password-strength">
+                <div class="strength-bar" [ngClass]="getPasswordStrengthClass()">
+                  <div class="strength-fill"></div>
+                </div>
+                <span class="strength-text" [ngClass]="getPasswordStrengthClass()">
+                  {{ getPasswordStrengthText() }}
+                </span>
+              </div>
+            }
+            <span class="field-hint">Min 8 characters, uppercase, lowercase, number, special character</span>
+          </div>
+        }
+
+        <!-- First Name -->
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            placeholder="John"
+            [class.error]="hasError('firstName', 'pattern') || hasError('firstName', 'maxlength')"
+          />
+          @if (getErrorMessage('firstName')) {
+            <span class="error-message">{{ getErrorMessage('firstName') }}</span>
+          }
+        </div>
+
+        <!-- Last Name -->
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            placeholder="Doe"
+            [class.error]="hasError('lastName', 'pattern') || hasError('lastName', 'maxlength')"
+          />
+          @if (getErrorMessage('lastName')) {
+            <span class="error-message">{{ getErrorMessage('lastName') }}</span>
+          }
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+          <label for="role">Role <span class="required">*</span></label>
+          <select
+            id="role"
+            formControlName="role"
+            [class.error]="hasError('role', 'required')"
+          >
+            @for (role of roles; track role.value) {
+              <option [value]="role.value">{{ role.label }}</option>
+            }
+          </select>
+          @if (getErrorMessage('role')) {
+            <span class="error-message">{{ getErrorMessage('role') }}</span>
+          }
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="close()"
+            [disabled]="isSubmitting"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="userForm.invalid || isSubmitting"
+          >
+            @if (isSubmitting) {
+              <div class="button-spinner"></div>
+              <span>{{ mode === 'create' ? 'Creating...' : 'Updating...' }}</span>
+            } @else {
+              <span>{{ mode === 'create' ? 'Create User' : 'Update User' }}</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,162 @@
+<div class="task-comments">
+  <!-- Add Comment Section -->
+  <div class="add-comment-section">
+    <h3 class="section-title">
+      <mat-icon>comment</mat-icon>
+      Add Comment
+    </h3>
+
+    <div class="comment-form">
+      <mat-form-field appearance="outline" class="comment-type-field">
+        <mat-label>Comment Type</mat-label>
+        <mat-select [formControl]="commentTypeControl">
+          <mat-option *ngFor="let type of commentTypes" [value]="type.value">
+            <mat-icon [style.color]="type.color">{{ type.icon }}</mat-icon>
+            {{ type.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="comment-input-field">
+        <mat-label>Your comment</mat-label>
+        <textarea
+          matInput
+          [formControl]="commentControl"
+          rows="3"
+          placeholder="Share an update, blocker, or note..."
+          maxlength="5000"
+          (keydown.ctrl.enter)="onAddComment()"
+        ></textarea>
+        <mat-hint align="end">{{ commentControl.value?.length || 0 }}/5000</mat-hint>
+        <mat-error *ngIf="commentControl.hasError('required')">
+          Comment is required
+        </mat-error>
+        <mat-error *ngIf="commentControl.hasError('minlength')">
+          Comment must be at least 1 character
+        </mat-error>
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="commentControl.invalid || isSubmitting"
+          (click)="onAddComment()"
+        >
+          <mat-icon>send</mat-icon>
+          Post Comment
+        </button>
+        <span class="hint-text">Ctrl+Enter to post</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comments List -->
+  <div class="comments-list">
+    <h3 class="section-title">
+      <mat-icon>forum</mat-icon>
+      Activity & Comments ({{ totalItems }})
+    </h3>
+
+    <div *ngIf="isLoading" class="loading-state">
+      <mat-icon>comment</mat-icon>
+      <p>Loading comments...</p>
+    </div>
+
+    <div *ngIf="!isLoading && comments.length === 0" class="empty-state">
+      <mat-icon>chat_bubble_outline</mat-icon>
+      <p>No comments yet</p>
+      <span>Be the first to add a comment</span>
+    </div>
+
+    <div class="comments-container" *ngIf="!isLoading && comments.length > 0">
+      <div *ngFor="let comment of comments" class="comment-item">
+        <!-- User Avatar -->
+        <div class="comment-avatar">
+          {{ getUserName(comment).charAt(0).toUpperCase() }}
+        </div>
+
+        <!-- Comment Content -->
+        <div class="comment-content">
+          <!-- Header -->
+          <div class="comment-header">
+            <div class="user-info">
+              <span class="user-name">{{ getUserName(comment) }}</span>
+              <mat-chip class="comment-type-chip" [style.background-color]="getCommentTypeInfo(comment.commentType).color">
+                <mat-icon>{{ getCommentTypeInfo(comment.commentType).icon }}</mat-icon>
+                {{ getCommentTypeInfo(comment.commentType).label }}
+              </mat-chip>
+            </div>
+            <div class="comment-meta">
+              <span class="comment-date" [matTooltip]="comment.createdAt | date:'medium'">
+                {{ formatDate(comment.createdAt) }}
+              </span>
+              <span class="edited-indicator" *ngIf="wasEdited(comment)" matTooltip="Edited">
+                <mat-icon>edit</mat-icon>
+              </span>
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="menu"
+                *ngIf="canModifyComment(comment)"
+                class="comment-menu-btn"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="startEdit(comment)">
+                  <mat-icon>edit</mat-icon>
+                  <span>Edit</span>
+                </button>
+                <button mat-menu-item (click)="onDeleteComment(comment.id)">
+                  <mat-icon color="warn">delete</mat-icon>
+                  <span>Delete</span>
+                </button>
+              </mat-menu>
+            </div>
+          </div>
+
+          <!-- Comment Text (View Mode) -->
+          <div class="comment-text" *ngIf="editingCommentId !== comment.id">
+            {{ comment.comment }}
+          </div>
+
+          <!-- Comment Text (Edit Mode) -->
+          <div class="comment-edit" *ngIf="editingCommentId === comment.id">
+            <mat-form-field appearance="outline" class="edit-field">
+              <textarea
+                matInput
+                [formControl]="editCommentControl"
+                rows="3"
+                maxlength="5000"
+              ></textarea>
+              <mat-hint align="end">{{ editCommentControl.value?.length || 0 }}/5000</mat-hint>
+            </mat-form-field>
+            <div class="edit-actions">
+              <button mat-button (click)="cancelEdit()">Cancel</button>
+              <button
+                mat-raised-button
+                color="primary"
+                [disabled]="editCommentControl.invalid"
+                (click)="saveEdit(comment.id)"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <mat-paginator
+      *ngIf="!isLoading && totalItems > pageSize"
+      [length]="totalItems"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[10, 20, 50]"
+      [pageIndex]="currentPage - 1"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+    >
+    </mat-paginator>
+  </div>
+</div>

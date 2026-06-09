@@ -1,0 +1,16 @@
+<div class="task-detail-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Task Details</h2>
+    <button mat-icon-button class="close-button" (click)="close()" aria-label="Close dialog">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  
+  <div mat-dialog-content class="dialog-content">
+    <app-task-detail
+      [projectId]="projectId"
+      [taskId]="taskId"
+      [isInDialog]="true">
+    </app-task-detail>
+  </div>
+</div>

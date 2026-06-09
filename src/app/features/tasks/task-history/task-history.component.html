@@ -1,0 +1,92 @@
+<div class="task-history">
+  <h3 class="section-title">
+    <mat-icon>history</mat-icon>
+    Activity History ({{ totalItems }})
+  </h3>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-icon>history</mat-icon>
+    <p>Loading history...</p>
+  </div>
+
+  <div *ngIf="!isLoading && history.length === 0" class="empty-state">
+    <mat-icon>history</mat-icon>
+    <p>No history yet</p>
+    <span>Activity will appear here as changes are made</span>
+  </div>
+
+  <div class="history-timeline" *ngIf="!isLoading && history.length > 0">
+    <div *ngFor="let entry of history; let last = last" class="timeline-item" [class.last]="last">
+      <!-- Timeline Line -->
+      <div class="timeline-line"></div>
+
+      <!-- Timeline Icon -->
+      <div class="timeline-icon" [style.background-color]="getActionInfo(entry.action).color">
+        <mat-icon>{{ getActionInfo(entry.action).icon }}</mat-icon>
+      </div>
+
+      <!-- Timeline Content -->
+      <div class="timeline-content">
+        <div class="history-card">
+          <!-- Header -->
+          <div class="history-header">
+            <div class="user-info">
+              <div class="user-avatar">
+                {{ getUserName(entry).charAt(0).toUpperCase() }}
+              </div>
+              <div class="user-details">
+                <span class="user-name">{{ getUserName(entry) }}</span>
+                <span class="user-email">{{ entry.user.email }}</span>
+              </div>
+            </div>
+            <div class="history-meta">
+              <mat-chip class="action-chip" [style.background-color]="getActionInfo(entry.action).color">
+                <mat-icon>{{ getActionInfo(entry.action).icon }}</mat-icon>
+                {{ getActionInfo(entry.action).label }}
+              </mat-chip>
+              <span class="history-date" [matTooltip]="formatFullDate(entry.createdAt)">
+                {{ formatDate(entry.createdAt) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="history-description">
+            {{ getFormattedEntry(entry) }}
+          </div>
+
+          <!-- Value Changes -->
+          <div class="value-changes" *ngIf="hasValueChanges(entry)">
+            <div class="change-item" *ngIf="entry.oldValue">
+              <span class="change-label">From:</span>
+              <span class="change-value old-value">{{ entry.oldValue }}</span>
+            </div>
+            <mat-icon class="change-arrow" *ngIf="entry.oldValue && entry.newValue">arrow_forward</mat-icon>
+            <div class="change-item" *ngIf="entry.newValue">
+              <span class="change-label">To:</span>
+              <span class="change-value new-value">{{ entry.newValue }}</span>
+            </div>
+          </div>
+
+          <!-- Field Name -->
+          <div class="field-info" *ngIf="entry.fieldName">
+            <mat-icon>label</mat-icon>
+            <span>Field: <strong>{{ entry.fieldName }}</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator
+    *ngIf="!isLoading && totalItems > pageSize"
+    [length]="totalItems"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[25, 50, 100]"
+    [pageIndex]="currentPage - 1"
+    (page)="onPageChange($event)"
+    showFirstLastButtons
+  >
+  </mat-paginator>
+</div>

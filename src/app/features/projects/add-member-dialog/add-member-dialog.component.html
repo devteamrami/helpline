@@ -1,0 +1,92 @@
+<div class="dialog-overlay" (click)="close()">
+  <div class="dialog-container" (click)="$event.stopPropagation()">
+    <div class="dialog-header">
+      <h2>Add Team Member</h2>
+      <button class="btn-close" (click)="close()" [disabled]="isSubmitting">×</button>
+    </div>
+
+    <div class="dialog-body">
+      <!-- Loading State -->
+      <div *ngIf="isLoadingUsers" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading available users...</p>
+      </div>
+
+      <!-- No Available Users -->
+      <div *ngIf="!isLoadingUsers && availableUsers.length === 0" class="empty-state">
+        <p>All team members have already been added to this project.</p>
+        <button class="btn-secondary" (click)="close()">Close</button>
+      </div>
+
+      <!-- Form -->
+      <form *ngIf="!isLoadingUsers && availableUsers.length > 0" [formGroup]="memberForm" (ngSubmit)="onSubmit()">
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-message">
+          <span class="error-icon">⚠️</span>
+          {{ errorMessage }}
+        </div>
+
+        <!-- User Selection -->
+        <div class="form-group">
+          <label for="userId">
+            Select User <span class="required">*</span>
+          </label>
+          <select 
+            id="userId"
+            formControlName="userId"
+            [class.error]="hasError('userId')">
+            <option value="">-- Select a user --</option>
+            <option *ngFor="let user of availableUsers" [value]="user.id">
+              {{ getUserDisplayName(user) }}
+            </option>
+          </select>
+          <div *ngIf="hasError('userId')" class="field-error">
+            {{ getErrorMessage('userId') }}
+          </div>
+        </div>
+
+        <!-- Project Role Selection -->
+        <div class="form-group">
+          <label for="projectRole">
+            Project Role <span class="required">*</span>
+          </label>
+          <select 
+            id="projectRole"
+            formControlName="projectRole"
+            [class.error]="hasError('projectRole')">
+            <option *ngFor="let role of projectRoles" [value]="role">
+              {{ role }}
+            </option>
+          </select>
+          <div *ngIf="hasError('projectRole')" class="field-error">
+            {{ getErrorMessage('projectRole') }}
+          </div>
+          <div class="field-hint">
+            <strong>Project Admin:</strong> Full project control<br>
+            <strong>Project Manager:</strong> Manage tasks and members<br>
+            <strong>Project Member:</strong> Work on assigned tasks<br>
+            <strong>Project Viewer:</strong> View-only access
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="dialog-actions">
+          <button 
+            type="button" 
+            class="btn-secondary" 
+            (click)="close()"
+            [disabled]="isSubmitting">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn-primary"
+            [disabled]="memberForm.invalid || isSubmitting">
+            <span *ngIf="!isSubmitting">Add Member</span>
+            <span *ngIf="isSubmitting">Adding...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

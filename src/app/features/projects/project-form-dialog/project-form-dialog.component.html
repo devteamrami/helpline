@@ -1,0 +1,145 @@
+<div class="dialog-overlay" (click)="close()">
+  <div class="dialog-container" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="dialog-header">
+      <h2 class="dialog-title">{{ getTitle() }}</h2>
+      <button class="btn-close" (click)="close()" type="button">
+        <span class="close-icon">✕</span>
+      </button>
+    </div>
+
+    <!-- Error Banner -->
+    <div *ngIf="errorMessage" class="error-banner">
+      <span class="error-icon">⚠️</span>
+      <p>{{ errorMessage }}</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" class="dialog-form">
+      <!-- Project Name -->
+      <div class="form-group">
+        <label for="name" class="form-label">
+          Project Name <span class="required">*</span>
+        </label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          class="form-input"
+          [class.error]="projectForm.get('name')?.invalid && projectForm.get('name')?.touched"
+          placeholder="Enter project name">
+        <span class="error-message" *ngIf="getErrorMessage('name')">
+          {{ getErrorMessage('name') }}
+        </span>
+        <span class="hint-text">3-200 characters</span>
+      </div>
+
+      <!-- Project Code -->
+      <div class="form-group" *ngIf="data.mode === 'create'">
+        <label for="code" class="form-label">
+          Project Code <span class="required">*</span>
+        </label>
+        <input
+          id="code"
+          type="text"
+          formControlName="code"
+          class="form-input"
+          [class.error]="projectForm.get('code')?.invalid && projectForm.get('code')?.touched"
+          placeholder="e.g., PROJ-001">
+        <span class="error-message" *ngIf="getErrorMessage('code')">
+          {{ getErrorMessage('code') }}
+        </span>
+        <span class="hint-text">3-20 characters (alphanumeric, hyphens, underscores)</span>
+      </div>
+
+      <!-- Project Code (Read-only in edit mode) -->
+      <div class="form-group" *ngIf="data.mode === 'edit'">
+        <label class="form-label">Project Code</label>
+        <div class="readonly-field">
+          <span class="code-badge">{{ data.project?.code }}</span>
+          <span class="readonly-hint">Code cannot be changed</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label for="description" class="form-label">
+          Description <span class="required">*</span>
+        </label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-textarea"
+          [class.error]="projectForm.get('description')?.invalid && projectForm.get('description')?.touched"
+          placeholder="Enter project description"
+          rows="4"></textarea>
+        <span class="error-message" *ngIf="getErrorMessage('description')">
+          {{ getErrorMessage('description') }}
+        </span>
+        <span class="hint-text">Maximum 2000 characters</span>
+      </div>
+
+      <!-- Status -->
+      <div class="form-group">
+        <label for="status" class="form-label">
+          Status <span class="required">*</span>
+        </label>
+        <select
+          id="status"
+          formControlName="status"
+          class="form-select">
+          <option *ngFor="let status of statusOptions" [value]="status">
+            {{ status }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Date Range -->
+      <div class="form-row">
+        <!-- Start Date -->
+        <div class="form-group">
+          <label for="startDate" class="form-label">Start Date</label>
+          <input
+            id="startDate"
+            type="date"
+            formControlName="startDate"
+            class="form-input">
+        </div>
+
+        <!-- End Date -->
+        <div class="form-group">
+          <label for="endDate" class="form-label">End Date</label>
+          <input
+            id="endDate"
+            type="date"
+            formControlName="endDate"
+            class="form-input"
+            [class.error]="hasDateRangeError()">
+        </div>
+      </div>
+
+      <!-- Date Range Error -->
+      <div *ngIf="hasDateRangeError()" class="error-message date-range-error">
+        End date must be after start date
+      </div>
+
+      <!-- Form Actions -->
+      <div class="dialog-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="close()"
+          [disabled]="isSubmitting">
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="projectForm.invalid || isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-small"></span>
+          {{ getSubmitButtonText() }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

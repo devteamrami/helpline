@@ -1,0 +1,134 @@
+<div class="faq-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">FAQ Management</h1>
+    <button class="btn btn-primary" (click)="openCreateDialog()">
+      <span class="icon">+</span>
+      Create FAQ
+    </button>
+  </div>
+
+  <!-- Filters — same layout as Projects page -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input
+        type="text"
+        [formControl]="searchControl"
+        placeholder="Search FAQs..."
+        class="search-input" />
+      <span class="search-icon">🔍</span>
+    </div>
+
+    <div class="filter-group">
+      <label for="faqStatusFilter">Status:</label>
+      <select id="faqStatusFilter" [formControl]="statusFilter" class="filter-select">
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Success Banner -->
+  <div *ngIf="successMessage" class="success-banner">
+    <p>✅ {{ successMessage }}</p>
+  </div>
+
+  <!-- Error Banner -->
+  <div *ngIf="deleteError" class="error-banner">
+    <p>{{ deleteError }}</p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading FAQs...</p>
+  </div>
+
+  <!-- API Error -->
+  <div *ngIf="errorMessage && !isLoading" class="error-banner">
+    <p>{{ errorMessage }}</p>
+    <button class="btn btn-secondary" (click)="retry()">Retry</button>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="faq-table">
+      <thead>
+        <tr>
+          <th class="col-num">#</th>
+          <th class="col-question">Question</th>
+          <th class="col-answer">Answer</th>
+          <th class="col-status">Status</th>
+          <th class="col-date">Created</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let faq of faqs; let i = index" class="faq-row">
+          <td class="col-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+          <td class="col-question question-cell">{{ truncate(faq.question, 80) }}</td>
+          <td class="col-answer">{{ truncate(faq.answer, 100) }}</td>
+          <td class="col-status">
+            <span class="status-badge" [class.active]="faq.isActive" [class.inactive]="!faq.isActive">
+              {{ faq.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td class="col-date">{{ formatDate(faq.createdAt) }}</td>
+          <td class="col-actions">
+            <!-- Toggle active -->
+            <button
+              class="btn-icon"
+              [title]="faq.isActive ? 'Deactivate' : 'Activate'"
+              (click)="toggleActive(faq, $event)"
+              [disabled]="togglingId === faq.id || !!deletingId">
+              {{ faq.isActive ? '🔴' : '🟢' }}
+            </button>
+            <!-- Edit -->
+            <button
+              class="btn-icon"
+              title="Edit"
+              (click)="openEditDialog(faq, $event)"
+              [disabled]="!!deletingId || !!togglingId">
+              ✏️
+            </button>
+            <!-- Delete -->
+            <button
+              class="btn-icon"
+              title="Delete"
+              (click)="deleteFaq(faq.id, $event)"
+              [disabled]="deletingId === faq.id || !!togglingId">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="faqs.length === 0" class="empty-state">
+      <p>No FAQs found</p>
+      <button class="btn btn-primary" (click)="openCreateDialog()">
+        Create Your First FAQ
+      </button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && !errorMessage && totalPages > 1" class="pagination">
+    <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+      Previous
+    </button>
+    <button
+      *ngFor="let page of getPageNumbers()"
+      class="btn-page"
+      [class.active]="page === currentPage"
+      (click)="onPageChange(page)">
+      {{ page }}
+    </button>
+    <button class="btn-page" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
+      Next
+    </button>
+    <span class="page-info">Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total)</span>
+  </div>
+
+</div>

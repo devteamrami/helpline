@@ -1,0 +1,114 @@
+<div class="ticket-list-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">Support Tickets</h1>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input
+        type="text"
+        [formControl]="searchControl"
+        placeholder="Search tickets..."
+        class="search-input" />
+      <span class="search-icon">🔍</span>
+    </div>
+
+    <div class="filter-group">
+      <label for="statusFilter">Status:</label>
+      <select
+        id="statusFilter"
+        [formControl]="statusFilter"
+        class="filter-select">
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading tickets...</p>
+  </div>
+
+  <!-- Error Banner -->
+  <div *ngIf="errorMessage && !isLoading" class="error-banner">
+    <p>{{ errorMessage }}</p>
+    <button class="btn btn-secondary" (click)="retry()">Retry</button>
+  </div>
+
+  <!-- Tickets Table -->
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="tickets-table">
+      <thead>
+        <tr>
+          <th>Ticket Name</th>
+          <th>User</th>
+          <th>Site</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Last Reply</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let ticket of tickets"
+          class="ticket-row"
+          (click)="onRowClick(ticket)"
+          tabindex="0"
+          (keydown.enter)="onRowClick(ticket)"
+          [attr.aria-label]="'View ticket: ' + ticket.ticketName">
+          <td class="ticket-name">{{ ticket.ticketName }}</td>
+          <td>{{ ticket.userFirstName }} {{ ticket.userLastName }}</td>
+          <td>{{ ticket.siteName }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(ticket.status)">
+              {{ getStatusLabel(ticket.status) }}
+            </span>
+          </td>
+          <td>{{ ticket.createdAt | date: 'MMM d, y' }}</td>
+          <td>{{ ticket.lastRepliedAt ? (ticket.lastRepliedAt | date: 'MMM d, y') : '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="tickets.length === 0" class="empty-state">
+      <p>No tickets found</p>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && !errorMessage && totalPages > 1" class="pagination">
+    <button
+      class="btn-page"
+      [disabled]="currentPage === 1"
+      (click)="onPageChangeDirect(currentPage - 1)">
+      Previous
+    </button>
+
+    <button
+      *ngFor="let page of getPageNumbers()"
+      class="btn-page"
+      [class.active]="page === currentPage"
+      (click)="onPageChangeDirect(page)">
+      {{ page }}
+    </button>
+
+    <button
+      class="btn-page"
+      [disabled]="currentPage === totalPages"
+      (click)="onPageChangeDirect(currentPage + 1)">
+      Next
+    </button>
+
+    <span class="page-info">
+      Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total)
+    </span>
+  </div>
+
+</div>

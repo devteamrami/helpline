@@ -1,0 +1,368 @@
+/* ── Dialog overlay ─────────────────────────────────────────────────────────── */
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2vh 4vw;      // Fluid padding — 2% viewport height, 4% viewport width
+  overflow-y: auto;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.dialog-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 92vw;           // 92% of viewport width — fluid, not hard-coded
+  max-width: 1100px;     // Generous cap for very wide screens
+  animation: slideUp 0.3s ease;
+  margin-bottom: 2vh;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.dialog-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.btn-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover { background: rgba(255, 255, 255, 0.35); transform: rotate(90deg); }
+
+  .close-icon { color: white; font-size: 1.2rem; }
+}
+
+/* ── Error banner ────────────────────────────────────────────────────────────── */
+
+.error-banner {
+  background: #fee;
+  border: 2px solid #fcc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1.5rem 2rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  .error-icon { font-size: 1.25rem; }
+  p { color: #c53030; margin: 0; flex: 1; }
+}
+
+/* ── Form ────────────────────────────────────────────────────────────────────── */
+
+.dialog-form { padding: 2rem; }
+
+.form-group { margin-bottom: 1.5rem; }
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+
+  .required { color: #e53e3e; margin-left: 0.25rem; }
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  &.error { border-color: #fc8181; background: #fff5f5; }
+}
+
+.error-message {
+  display: block;
+  color: #e53e3e;
+  font-size: 0.875rem;
+  margin-top: 0.375rem;
+  font-weight: 500;
+}
+
+.hint-text {
+  display: block;
+  color: #718096;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+.editor-hint {
+  font-size: 0.8rem;
+  color: #718096;
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #f7fafc;
+  border-left: 3px solid #667eea;
+  border-radius: 0 4px 4px 0;
+}
+
+/* ── CKEditor wrapper — match app theme ──────────────────────────────────────── */
+
+.editor-wrapper {
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+  direction: ltr;   // Force LTR regardless of page/browser locale
+
+  &:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  // Override CKEditor toolbar background to match our gradient
+  :host ::ng-deep .ck.ck-toolbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 0;
+    padding: 4px 6px;
+
+    .ck-toolbar__items { gap: 2px; }
+
+    .ck.ck-button,
+    .ck.ck-dropdown > .ck-button {
+      color: rgba(255, 255, 255, 0.85);
+      border-radius: 4px;
+      border: none;
+      background: transparent;
+      transition: background 0.15s;
+
+      &:hover,
+      &.ck-on {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+
+      .ck-icon { color: inherit; }
+    }
+
+    .ck-toolbar__separator { background: rgba(255, 255, 255, 0.25); }
+  }
+
+  :host ::ng-deep .ck.ck-editor__editable {
+    border: none;
+    border-radius: 0;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #2d3748;
+
+    &.ck-focused { outline: none; border: none; box-shadow: none; }
+
+    img { cursor: pointer; max-width: 100%; border-radius: 4px; }
+  }
+}
+
+/* ── Actions ─────────────────────────────────────────────────────────────────── */
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e2e8f0;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+  }
+
+  &.btn-secondary {
+    background: #e2e8f0;
+    color: #2d3748;
+    &:hover:not(:disabled) { background: #cbd5e0; }
+  }
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── tui-image-editor overlay ────────────────────────────────────────────────── */
+
+.image-editor-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.image-editor-panel {
+  background: #1e1e2e;
+  border-radius: 16px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 980px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.image-editor-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem 1.5rem;
+
+  h3 { color: white; margin: 0 0 0.25rem; font-size: 1.2rem; font-weight: 700; }
+  p  { color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.85rem; }
+}
+
+.tui-editor-mount {
+  width: 100%;
+  height: 560px;
+  overflow: hidden;
+}
+
+.image-editor-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: #1a1a2e;
+  color: rgba(255,255,255,0.8);
+  font-size: 0.9rem;
+}
+
+.editor-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255,255,255,0.2);
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.image-editor-actions {
+  background: #2a2a3e;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.apply-edit-error {
+  background: #c53030;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .dialog-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .dialog-container {
+    width: 100vw;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    margin-bottom: 0;
+  }
+
+  .dialog-form { padding: 1.25rem; }
+
+  .dialog-actions {
+    flex-direction: column-reverse;
+    .btn { width: 100%; justify-content: center; }
+  }
+
+  :host ::ng-deep .ck.ck-editor__editable {
+    min-height: 220px;   // Slightly shorter on mobile to leave room for keyboard
+    max-height: 40vh;
+  }
+
+  .tui-editor-mount { height: 400px; }
+}
+
+@media (min-width: 769px) and (max-width: 1100px) {
+  .dialog-container {
+    width: 94vw;
+  }
+}

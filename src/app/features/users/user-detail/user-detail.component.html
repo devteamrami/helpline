@@ -1,0 +1,232 @@
+<div class="user-detail-container">
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading user details...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (errorMessage && !isLoading) {
+    <div class="error-container">
+      <svg width="48" height="48" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+      </svg>
+      <h3>Failed to Load User</h3>
+      <p>{{ errorMessage }}</p>
+      <div class="error-actions">
+        <button class="btn-secondary" (click)="retry()">Try Again</button>
+        <button class="btn-secondary" (click)="goBack()">Go Back</button>
+      </div>
+    </div>
+  }
+
+  <!-- User Detail Content -->
+  @if (!isLoading && !errorMessage && user) {
+    <!-- Header -->
+    <header class="detail-header">
+      <button class="back-button" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+        </svg>
+        <span>Back</span>
+      </button>
+
+      <div class="header-actions">
+        @if (canEdit()) {
+          <button class="btn-secondary" (click)="openEditDialog()">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+            </svg>
+            <span>Edit</span>
+          </button>
+        }
+        @if (canDeactivate() && user.isActive) {
+          <button class="btn-danger" (click)="confirmDeactivate()">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
+            </svg>
+            <span>Deactivate</span>
+          </button>
+        }
+        @if (canActivate() && !user.isActive) {
+          <button class="btn-success" (click)="activateUser()">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span>Activate</span>
+          </button>
+        }
+      </div>
+    </header>
+
+    <!-- Profile Section -->
+    <section class="profile-section">
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="user-avatar-large">{{ getUserInitials() }}</div>
+          <div class="profile-info">
+            <h1>{{ getDisplayName() }}</h1>
+            <p class="username">@{{ user.username }}</p>
+            <div class="badges">
+              <span class="role-badge" [ngClass]="getRoleBadgeClass()">
+                {{ user.role || 'No Role' }}
+              </span>
+              <span class="status-badge" [ngClass]="getStatusBadgeClass()">
+                {{ user.isActive ? 'Active' : 'Inactive' }}
+              </span>
+              @if (user.isVerified) {
+                <span class="verified-badge">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                  Verified
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Details Grid -->
+    <div class="details-grid">
+      <!-- Contact Information -->
+      <section class="info-card">
+        <div class="card-header">
+          <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+          </svg>
+          <h3>Contact Information</h3>
+        </div>
+        <div class="card-content">
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ user.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Username</span>
+            <span class="info-value">{{ user.username }}</span>
+          </div>
+          @if (user.firstName || user.lastName) {
+            <div class="info-row">
+              <span class="info-label">Full Name</span>
+              <span class="info-value">{{ user.firstName }} {{ user.lastName }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Account Information -->
+      <section class="info-card">
+        <div class="card-header">
+          <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+          </svg>
+          <h3>Account Information</h3>
+        </div>
+        <div class="card-content">
+          <div class="info-row">
+            <span class="info-label">Role</span>
+            <span class="info-value">
+              <span class="role-badge" [ngClass]="getRoleBadgeClass()">
+                {{ user.role || 'No Role' }}
+              </span>
+            </span>
+          </div>
+          @if (user.roleDescription) {
+            <div class="info-row">
+              <span class="info-label">Description</span>
+              <span class="info-value">{{ user.roleDescription }}</span>
+            </div>
+          }
+          <div class="info-row">
+            <span class="info-label">Status</span>
+            <span class="info-value">
+              <span class="status-badge" [ngClass]="getStatusBadgeClass()">
+                {{ user.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Verified</span>
+            <span class="info-value">{{ user.isVerified ? 'Yes' : 'No' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Activity Information -->
+      <section class="info-card">
+        <div class="card-header">
+          <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+          </svg>
+          <h3>Activity</h3>
+        </div>
+        <div class="card-content">
+          <div class="info-row">
+            <span class="info-label">Last Login</span>
+            <span class="info-value">{{ formatDate(user.lastLogin) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Created</span>
+            <span class="info-value">{{ formatDate(user.createdAt) }}</span>
+          </div>
+          @if (user.updatedAt) {
+            <div class="info-row">
+              <span class="info-label">Last Updated</span>
+              <span class="info-value">{{ formatDate(user.updatedAt) }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <!-- Project Memberships -->
+    @if (user.projectMemberships && user.projectMemberships.length > 0) {
+      <section class="projects-section">
+        <div class="section-header">
+          <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+          </svg>
+          <h3>Project Memberships</h3>
+          <span class="count-badge">{{ user.projectMemberships.length }}</span>
+        </div>
+        <div class="projects-grid">
+          @for (membership of user.projectMemberships; track membership.projectId) {
+            <div class="project-card" (click)="navigateToProject(membership.projectId)">
+              <div class="project-icon">
+                <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14 16a2 2 0 002-2v-2a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2h2zM6 16a2 2 0 002-2v-2a2 2 0 00-2-2H4a2 2 0 00-2 2v2a2 2 0 002 2h2z"/>
+                </svg>
+              </div>
+              <div class="project-info">
+                <h4>{{ membership.projectName }}</h4>
+                <div class="project-meta">
+                  <span class="project-role">{{ membership.projectRole }}</span>
+                  <span class="project-date">Joined {{ formatDateShort(membership.joinedAt) }}</span>
+                </div>
+              </div>
+              <svg class="arrow-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- No Projects Message -->
+    @if (!user.projectMemberships || user.projectMemberships.length === 0) {
+      <section class="no-projects">
+        <svg width="64" height="64" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+        </svg>
+        <h3>No Project Memberships</h3>
+        <p>This user is not a member of any projects yet.</p>
+      </section>
+    }
+  }
+</div>
