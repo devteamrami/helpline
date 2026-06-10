@@ -17,6 +17,17 @@
     </div>
 
     <div class="filter-group">
+      <label for="siteFilter">Site:</label>
+      <select
+        id="siteFilter"
+        [formControl]="siteFilter"
+        class="filter-select">
+        <option value="">All Sites</option>
+        <option *ngFor="let site of siteOptions" [value]="site">{{ site }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
       <label for="statusFilter">Status:</label>
       <select
         id="statusFilter"
@@ -65,10 +76,17 @@
           <td class="ticket-name">{{ ticket.ticketName }}</td>
           <td>{{ ticket.userFirstName }} {{ ticket.userLastName }}</td>
           <td>{{ ticket.siteName }}</td>
-          <td>
-            <span class="status-badge" [ngClass]="getStatusClass(ticket.status)">
-              {{ getStatusLabel(ticket.status) }}
-            </span>
+          <td (click)="$event.stopPropagation()">
+            <select
+              class="inline-status-select"
+              [ngClass]="getStatusClass(ticket.status)"
+              [value]="ticket.status"
+              (change)="onInlineStatusChange(ticket, $event)">
+              <option value="open">Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </select>
           </td>
           <td>{{ ticket.createdAt | date: 'MMM d, y' }}</td>
           <td>{{ ticket.lastRepliedAt ? (ticket.lastRepliedAt | date: 'MMM d, y') : '—' }}</td>

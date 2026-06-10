@@ -205,6 +205,18 @@ export class TicketService {
   }
 
   /**
+   * Get distinct site names for filter dropdown.
+   */
+  getSites(): Observable<string[]> {
+    return this.http
+      .get<ApiResponse<{ sites: string[] }>>(`${this.apiUrl}/sites`)
+      .pipe(
+        map((response) => response.data?.sites ?? []),
+        catchError(() => throwError(() => new Error('Failed to load sites')))
+      );
+  }
+
+  /**
    * Submit a conversation reply (with optional file attachments via FormData).
    * On success, the caller is responsible for appending the returned entry to
    * the local conversation thread.
@@ -280,6 +292,9 @@ export class TicketService {
       }
       if (params.search) {
         httpParams = httpParams.set('search', params.search);
+      }
+      if ((params as any).site) {
+        httpParams = httpParams.set('site', (params as any).site);
       }
     }
 

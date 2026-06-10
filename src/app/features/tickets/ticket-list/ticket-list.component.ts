@@ -40,6 +40,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
   // ── Filters ──────────────────────────────────────────────────────────────────
   searchControl = new FormControl('');
   statusFilter = new FormControl<TicketStatus | ''>('');
+  siteFilter = new FormControl('');
+  siteOptions: string[] = [];
 
   statusOptions: Array<{ value: TicketStatus | ''; label: string }> = [
     { value: '', label: 'All Statuses' },
@@ -60,6 +62,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setupSearchDebounce();
     this.setupStatusFilter();
+    this.setupSiteFilter();
+    this.loadSites();
     this.loadTickets();
   }
 
@@ -88,6 +92,24 @@ export class TicketListComponent implements OnInit, OnDestroy {
       });
   }
 
+  private setupSiteFilter(): void {
+    this.siteFilter.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadTickets();
+      });
+  }
+
+  private loadSites(): void {
+    this.ticketService.getSites()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (sites) => { this.siteOptions = sites; this.cdr.detectChanges(); },
+        error: () => {},
+      });
+  }
+
   // ── Data loading ───────────────────────────────────────────────────────────────
 
   loadTickets(): void {
@@ -100,7 +122,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
         limit: this.pageSize,
         search: this.searchControl.value || undefined,
         status: (this.statusFilter.value as TicketStatus) || undefined,
-      })
+        site: this.siteFilter.value || undefined,
+      } as any)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -136,6 +159,27 @@ export class TicketListComponent implements OnInit, OnDestroy {
     const pages: number[] = [];
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
+  }
+
+  // ── Inline status change ─────────────────────────────────────────────────────
+
+  onInlineStatusChange(ticket: Ticket, event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const newStatus = select.value as TicketStatus;
+
+    this.ticketService.updateTicketStatus(ticket.id, newStatus)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          // Update local state
+          ticket.status = newStatus;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          // Revert on failure
+          select.value = ticket.status;
+        },
+      });
   }
 
   // ── Row click ──────────────────────────────────────────────────────────────────
