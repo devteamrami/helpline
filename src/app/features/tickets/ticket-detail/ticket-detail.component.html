@@ -75,11 +75,11 @@
             [class.message-user]="entry.senderType === 'user'">
             <div class="message-header">
               <span class="sender-name">
-                {{ entry.senderType === 'staff' ? '🛡️ Support Team' : ('👤 ' + ticket.userFirstName + ' ' + (ticket.userLastName || '')) }}
+                {{ entry.senderType === 'staff' ? '🛡️ Support Team (' + getStaffName(entry) + ')' : ('👤 ' + ticket.userFirstName + ' ' + (ticket.userLastName || '')) }}
               </span>
               <span class="message-time">{{ formatDateTime(entry.createdAt) }}</span>
             </div>
-            <p class="message-body">{{ entry.message }}</p>
+            <p *ngIf="entry.message" class="message-body">{{ entry.message }}</p>
             <div *ngIf="entry.attachments && entry.attachments.length > 0" class="message-attachments">
               <a *ngFor="let att of entry.attachments" [href]="att.s3Key" target="_blank" class="attachment-chip">
                 📎 {{ getAttachmentFileName(att.s3Key, att.originalName) }}

@@ -478,6 +478,11 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
     return originalName || s3Key.split('/').pop() || s3Key;
   }
 
+  getStaffName(entry: ConversationEntry): string {
+    const name = [entry.senderFirstName, entry.senderLastName].filter(Boolean).join(' ');
+    return name || 'Staff';
+  }
+
   get replyCharCount(): number {
     return (this.replyControl.value ?? '').length;
   }

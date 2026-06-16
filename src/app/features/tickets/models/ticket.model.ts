@@ -30,6 +30,8 @@ export interface ConversationEntry {
   ticketId: string;
   senderType: SenderType;
   senderId: string;
+  senderFirstName?: string;
+  senderLastName?: string;
   message: string;
   attachments: Attachment[];
   createdAt: string;

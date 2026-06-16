@@ -61,6 +61,8 @@ interface RawConversationEntry {
   ticket_id: string;
   sender_type: 'user' | 'staff';
   sender_id: string;
+  sender_first_name?: string;
+  sender_last_name?: string;
   message: string;
   attachments: RawAttachment[];
   created_at: string;
@@ -109,6 +111,8 @@ function mapConversationEntry(raw: RawConversationEntry): ConversationEntry {
     ticketId: raw.ticket_id,
     senderType: raw.sender_type,
     senderId: raw.sender_id,
+    senderFirstName: raw.sender_first_name,
+    senderLastName: raw.sender_last_name,
     message: raw.message,
     attachments: (raw.attachments ?? []).map(
       (a): Attachment => ({ s3Key: a.s3Key, originalName: a.originalName })
