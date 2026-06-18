@@ -92,18 +92,27 @@
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(42, 46, 51, 0.75);
-    color: #ffffff;
-    transform: translateY(-2px);
+    background: rgba(61, 153, 252, 0.15);
+    color: #3d99fc;
+    transform: scale(1.05);
+  }
+
+  &.jiggle {
+    animation: bellJiggle 0.8s ease-in-out infinite;
+    color: #3d99fc;
+
+    .badge {
+      animation: badgePulse 1s ease-in-out infinite;
+    }
   }
 
   .badge {
     position: absolute;
     top: -4px;
     right: -4px;
-    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+    background: #f03d4f;
     color: white;
-    font-size: 0.625rem;
+    font-size: 0.6rem;
     font-weight: 700;
     padding: 2px 6px;
     border-radius: 10px;
@@ -874,4 +883,26 @@
   .breakdown-grid {
     grid-template-columns: 1fr;
   }
+}
+
+
+// ============================================
+// BELL JIGGLE & BADGE PULSE ANIMATIONS
+// ============================================
+
+@keyframes bellJiggle {
+  0%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-14deg); }
+  30% { transform: rotate(10deg); }
+  40% { transform: rotate(-10deg); }
+  50% { transform: rotate(6deg); }
+  60% { transform: rotate(-6deg); }
+  70% { transform: rotate(2deg); }
+  80% { transform: rotate(-2deg); }
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
 }

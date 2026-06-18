@@ -3,7 +3,7 @@
  * Main dashboard with modern, reactive design
  */
 
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -12,6 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { DashboardService, DashboardStats } from './dashboard.service';
 import { ActivityService } from '../activities/activity.service';
 import { Activity } from '../activities/activity.model';
+import { NotificationService } from '../../core/services/notification.service';
 
 interface StatCard {
   title: string;
@@ -42,13 +43,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private dashboardService = inject(DashboardService);
   private activityService = inject(ActivityService);
+  private notificationService = inject(NotificationService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
   currentUser: User | null = null;
   currentTime: Date = new Date();
   greeting: string = '';
   dashboardStats: DashboardStats | null = null;
+  unseenCount = 0;
+  bellJiggle = false;
 
   stats: StatCard[] = [
     {
@@ -122,6 +127,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   ];
 
+  constructor() {
+    // Load data AFTER hydration is complete (client-side only)
+    afterNextRender(() => {
+      this.loadDashboardData();
+    });
+  }
+
   ngOnInit(): void {
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
@@ -130,64 +142,47 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.updateGreeting();
       });
 
-    // Load real stats from API
+    setInterval(() => {
+      this.currentTime = new Date();
+      this.updateGreeting();
+    }, 60000);
+  }
+
+  private loadDashboardData(): void {
+    // Load stats
     this.dashboardService.getStats()
       .pipe(takeUntil(this.destroy$))
       .subscribe((data) => {
         if (data) {
           this.dashboardStats = data;
-          this.stats = [
-            {
-              title: 'Total Projects',
-              value: data.projects.total,
-              change: data.projects.active,
-              icon: 'projects',
-              color: 'purple',
-              trend: 'up'
-            },
-            {
-              title: 'Active Tasks',
-              value: data.tasks.active,
-              change: data.tasks.total,
-              icon: 'tasks',
-              color: 'blue',
-              trend: 'up'
-            },
-            {
-              title: 'Team Members',
-              value: data.teamMembers,
-              change: 0,
-              icon: 'team',
-              color: 'green',
-              trend: 'up'
-            },
-            {
-              title: 'Support Tickets',
-              value: data.tickets.total,
-              change: data.tickets.open + data.tickets.inProgress,
-              icon: 'completed',
-              color: 'orange',
-              trend: 'up'
-            }
-          ];
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         }
       });
 
-    // Update time every minute
-    setInterval(() => {
-      this.currentTime = new Date();
-      this.updateGreeting();
-    }, 60000);
-
-    // Load recent activities
-    this.loadActivities();
-  }
-
-  loadActivities(): void {
+    // Load activities
     this.activityService.getActivities(1, 5)
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
         this.recentActivities = res.activities;
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      });
+
+    // Subscribe to notification state
+    this.notificationService.unseenCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((count) => {
+        this.unseenCount = count;
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      });
+    this.notificationService.shouldJiggle$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((jiggle) => {
+        this.bellJiggle = jiggle;
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       });
   }
 
@@ -206,6 +201,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   goToActivities(): void {
+    this.router.navigate(['/activities']);
+  }
+
+  onBellClick(): void {
+    this.notificationService.markAsSeen();
     this.router.navigate(['/activities']);
   }
 
