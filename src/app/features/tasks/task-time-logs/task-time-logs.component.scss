@@ -10,11 +10,11 @@
   gap: 8px;
   font-size: 18px;
   font-weight: 600;
-  color: #2d3748;
+  color: #ffffff;
   margin: 0 0 16px 0;
 
   mat-icon {
-    color: #667eea;
+    color: #3d99fc;
   }
 }
 
@@ -43,7 +43,7 @@
         width: 48px;
         height: 48px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #3d99fc;
         color: white;
         display: flex;
         align-items: center;
@@ -61,7 +61,7 @@
           gap: 8px;
           font-size: 16px;
           font-weight: 600;
-          color: #2d3748;
+          color: #ffffff;
           margin-bottom: 4px;
 
           .active-chip {
@@ -81,7 +81,7 @@
 
         .user-email {
           font-size: 13px;
-          color: #718096;
+          color: #999999;
         }
       }
     }
@@ -90,7 +90,7 @@
       display: flex;
       gap: 24px;
       padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.085);
 
       .stat {
         display: flex;
@@ -100,12 +100,12 @@
         .stat-value {
           font-size: 24px;
           font-weight: 700;
-          color: #667eea;
+          color: #3d99fc;
         }
 
         .stat-label {
           font-size: 12px;
-          color: #718096;
+          color: #999999;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
@@ -124,7 +124,7 @@
     justify-content: center;
     padding: 48px 24px;
     text-align: center;
-    color: #718096;
+    color: #999999;
 
     mat-icon {
       font-size: 64px;
@@ -148,14 +148,14 @@
 
   table {
     width: 100%;
-    background: white;
+    background: rgba(42, 46, 51, 0.65);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
     th {
-      background: #f7fafc;
-      color: #4a5568;
+      background: rgba(42, 46, 51, 0.65);
+      color: #cccccc;
       font-weight: 600;
       font-size: 13px;
       text-transform: uppercase;
@@ -165,7 +165,7 @@
 
     td {
       padding: 16px;
-      border-bottom: 1px solid #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.085);
     }
 
     tr.active-row {
@@ -181,7 +181,7 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #3d99fc;
         color: white;
         display: flex;
         align-items: center;
@@ -194,13 +194,13 @@
         .user-name-small {
           font-size: 14px;
           font-weight: 500;
-          color: #2d3748;
+          color: #ffffff;
           margin-bottom: 2px;
         }
 
         .user-email-small {
           font-size: 12px;
-          color: #718096;
+          color: #999999;
         }
       }
     }
@@ -210,7 +210,7 @@
       align-items: center;
       gap: 6px;
       font-size: 14px;
-      color: #4a5568;
+      color: #cccccc;
 
       .time-icon {
         font-size: 16px;
@@ -241,8 +241,8 @@
       align-items: center;
       padding: 6px 12px;
       border-radius: 16px;
-      background: #e2e8f0;
-      color: #4a5568;
+      background: rgba(255, 255, 255, 0.1);
+      color: #cccccc;
       font-size: 13px;
       font-weight: 600;
 
@@ -270,8 +270,8 @@
       }
 
       &.completed {
-        background: #e2e8f0;
-        color: #4a5568;
+        background: rgba(255, 255, 255, 0.1);
+        color: #cccccc;
       }
     }
   }

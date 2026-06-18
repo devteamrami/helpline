@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../Node js/ramiscope-pmt-system-backend"
+		},
+		{
+			"path": "../ramifront"
 		}
 	],
 	"settings": {

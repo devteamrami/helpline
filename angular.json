@@ -35,6 +35,9 @@
               "node_modules/ckeditor5/dist/ckeditor5.css",
               "src/styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": ["src/styles"]
+            },
             "server": "src/main.server.ts",
             "outputMode": "server",
             "security": {

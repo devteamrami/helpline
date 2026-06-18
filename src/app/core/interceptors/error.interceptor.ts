@@ -5,7 +5,7 @@
 
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { catchError, switchMap, throwError, timeout } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 
@@ -17,37 +17,41 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       // Handle 401 Unauthorized errors
       if (error.status === 401) {
-        // Check if this is not a refresh token request
-        if (!req.url.includes('/auth/refresh')) {
-          // Try to refresh the token
-          return authService.refreshToken().pipe(
-            switchMap((newToken) => {
-              // Retry the original request with new token
-              const clonedReq = req.clone({
-                setHeaders: {
-                  Authorization: `Bearer ${newToken}`,
-                },
-              });
-              return next(clonedReq);
-            }),
-            catchError((refreshError) => {
-              // Refresh failed, logout user
-              authService.logout().subscribe();
-              router.navigate(['/auth/login']);
-              return throwError(() => refreshError);
-            })
-          );
+        // If this is a refresh request itself failing, just propagate
+        if (req.url.includes('/auth/refresh')) {
+          return throwError(() => error);
         }
+
+        // Check if we even have a refresh token before attempting
+        const hasRefreshToken = authService.getRefreshToken();
+        if (!hasRefreshToken) {
+          // No refresh token, redirect to login immediately
+          authService.logout().subscribe();
+          router.navigate(['/auth/login']);
+          return throwError(() => error);
+        }
+
+        // Try to refresh the token with timeout
+        return authService.refreshToken().pipe(
+          timeout(10000),
+          switchMap((newToken) => {
+            const clonedReq = req.clone({
+              setHeaders: { Authorization: `Bearer ${newToken}` },
+            });
+            return next(clonedReq);
+          }),
+          catchError((refreshError) => {
+            // Refresh failed or timed out, logout and redirect
+            authService.logout().subscribe();
+            router.navigate(['/auth/login']);
+            return throwError(() => refreshError);
+          })
+        );
       }
 
       // Handle 403 Forbidden errors
       if (error.status === 403) {
         console.error('Access forbidden:', error.error?.message);
-      }
-
-      // Handle 404 Not Found errors
-      if (error.status === 404) {
-        console.error('Resource not found:', error.error?.message);
       }
 
       // Handle 500 Server errors

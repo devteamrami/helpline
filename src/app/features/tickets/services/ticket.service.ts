@@ -200,8 +200,12 @@ export class TicketService {
     return this.http
       .get<ApiResponse<RawTicketDetail>>(`${this.apiUrl}/${id}`)
       .pipe(
-        map((response) => mapTicketDetail(response.data!)),
+        map((response) => {
+          console.log('[TicketService] getTicketById response:', response);
+          return mapTicketDetail(response.data!);
+        }),
         catchError((error) => {
+          console.error('[TicketService] getTicketById error:', error);
           const message = this.extractErrorMessage(error);
           return throwError(() => new Error(message));
         })

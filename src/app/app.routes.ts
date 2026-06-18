@@ -89,6 +89,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'activities',
+        loadComponent: () =>
+          import('./features/activities/activities.component').then(
+            (m) => m.ActivitiesComponent
+          ),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

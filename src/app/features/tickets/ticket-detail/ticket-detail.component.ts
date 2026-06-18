@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil, finalize } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 
 // Angular Material
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -113,25 +113,35 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.loadError = null;
 
+    // Safety timeout — if API never responds, stop spinner after 12 seconds
+    const safetyTimer = setTimeout(() => {
+      if (this.isLoading) {
+        this.isLoading = false;
+        this.loadError = 'Request timed out. Please try again.';
+        this.cdr.detectChanges();
+      }
+    }, 12000);
+
     this.ticketService
       .getTicketById(id)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => {
-          // ALWAYS reset loading — even if interceptor swallows the response
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        })
-      )
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (detail) => {
+          console.log('[TicketDetail] next fired, detail:', detail?.id);
+          clearTimeout(safetyTimer);
           this.ticket = detail;
           this.conversations = [...(detail.conversations ?? [])];
           this.statusControl.setValue(detail.status);
           this.previousStatus = detail.status;
+          this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
+          console.log('[TicketDetail] error fired:', err?.message);
+          clearTimeout(safetyTimer);
           this.loadError = err.message || 'Failed to load ticket.';
+          this.isLoading = false;
+          this.cdr.detectChanges();
         },
       });
   }
@@ -277,12 +287,12 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
           'common.backgroundColor': '#1e1e2e',
           'common.border': '0px',
           'header.backgroundImage': 'none',
-          'header.backgroundColor': '#667eea',
+          'header.backgroundColor': '#3d99fc',
           'header.border': '0px',
-          'loadButton.backgroundColor': '#667eea',
+          'loadButton.backgroundColor': '#3d99fc',
           'loadButton.border': 'none',
           'loadButton.color': '#fff',
-          'downloadButton.backgroundColor': '#764ba2',
+          'downloadButton.backgroundColor': '#003f83',
           'downloadButton.border': 'none',
           'downloadButton.color': '#fff',
           'menu.normalIcon.color': '#eee',

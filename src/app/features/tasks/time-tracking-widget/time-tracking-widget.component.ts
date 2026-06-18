@@ -259,7 +259,7 @@ export class TimeTrackingWidgetComponent implements OnInit, OnChanges, OnDestroy
               icon: 'error',
               title: 'Failed to Start Task',
               text: forceError?.error?.message || 'An error occurred while starting the task.',
-              confirmButtonColor: '#667eea'
+              confirmButtonColor: '#3d99fc'
             });
             
             this.isLoading = false;
@@ -277,7 +277,7 @@ export class TimeTrackingWidgetComponent implements OnInit, OnChanges, OnDestroy
           icon: 'error',
           title: 'Failed to Start Task',
           text: errorMessage || 'An error occurred while starting the task. Please try again.',
-          confirmButtonColor: '#667eea'
+          confirmButtonColor: '#3d99fc'
         });
         
         this.isLoading = false;
@@ -334,7 +334,7 @@ export class TimeTrackingWidgetComponent implements OnInit, OnChanges, OnDestroy
         icon: 'error',
         title: 'Failed to Pause Task',
         text: errorMessage,
-        confirmButtonColor: '#667eea'
+        confirmButtonColor: '#3d99fc'
       });
     } finally {
       this.isLoading = false;
@@ -394,7 +394,7 @@ export class TimeTrackingWidgetComponent implements OnInit, OnChanges, OnDestroy
         icon: 'error',
         title: 'Failed to Complete Task',
         text: errorMessage,
-        confirmButtonColor: '#667eea'
+        confirmButtonColor: '#3d99fc'
       });
     } finally {
       this.isLoading = false;

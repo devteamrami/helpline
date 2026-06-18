@@ -9,6 +9,7 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { Subject, filter, takeUntil } from 'rxjs';
 
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 import { User } from '../../models/user.model';
 
 interface MenuItem {
@@ -30,6 +31,7 @@ interface MenuItem {
 export class MainLayoutComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private notificationService = inject(NotificationService);
   private destroy$ = new Subject<void>();
 
   // State
@@ -37,6 +39,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   isDrawerOpen = false;
   isMobile = false;
   currentRoute = '';
+
+  // Notification bell state
+  unseenCount = 0;
+  bellJiggle = false;
 
   // Menu items
   menuItems: MenuItem[] = [
@@ -138,9 +144,26 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
     // Set initial route
     this.currentRoute = this.router.url;
+
+    // Start notification polling
+    this.notificationService.startPolling();
+
+    // Subscribe to notification observables
+    this.notificationService.unseenCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((count) => {
+        this.unseenCount = count;
+      });
+
+    this.notificationService.shouldJiggle$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((jiggle) => {
+        this.bellJiggle = jiggle;
+      });
   }
 
   ngOnDestroy(): void {
+    this.notificationService.stopPolling();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -248,6 +271,14 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       viewer: 'role-viewer',
     };
     return classes[role] || 'role-default';
+  }
+
+  /**
+   * Handle notification bell click
+   */
+  onBellClick(): void {
+    this.notificationService.markAsSeen();
+    this.router.navigate(['/activities']);
   }
 
   /**

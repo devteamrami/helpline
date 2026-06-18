@@ -1,0 +1,91 @@
+/**
+ * Ramiscope Design System — DARK THEME Tokens
+ * The PMS uses the dark theme from Ramiscope production.
+ */
+
+// ─── Core Palette ────────────────────────────────────────────────────────────
+$primary: #3d99fc;
+$primary-rgb: 61, 153, 252;
+$primary-dark: #003f83;
+$primary-text: #ffffff;
+
+// ─── Background Colors ───────────────────────────────────────────────────────
+$page-bg: #1a1d21;
+$page-bg-overlay: rgba(55, 55, 55, 0.085);
+$content-bg: rgba(42, 46, 51, 0.9);
+$card-bg: rgba(42, 46, 51, 0.65);
+$card-header-bg: rgba(42, 46, 51, 0.85);
+$card-body-bg: rgba(42, 46, 51, 0.75);
+$dropdown-bg: rgba(55, 55, 55, 0.85);
+$modal-backdrop: rgba(61, 153, 252, 0.45);
+$form-bg: #000000;
+
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+$sidebar-bg: #1f1f1f;
+$sidebar-text: #ffffff;
+$sidebar-section-header: #dddddd;
+$sidebar-link-text: #cccccc;
+$sidebar-active-bg: #333333;
+$sidebar-active-text: #ffffff;
+$sidebar-active-radius: 8px;
+$sidebar-hover-bg: rgba(255, 255, 255, 0.15);
+$sidebar-width: 250px;
+
+// ─── Text Colors ─────────────────────────────────────────────────────────────
+$text-primary: #ffffff;
+$text-secondary: #999999;
+$border-color: rgba(255, 255, 255, 0.085);
+
+// ─── Gradient Colors ─────────────────────────────────────────────────────────
+$gradient-1: #00B9FF;
+$gradient-2: #2253c3;
+$gradient-3: #00152c;
+$text-gradient-1: #ff34bb;
+$text-gradient-2: #8758db;
+
+// ─── Buttons ─────────────────────────────────────────────────────────────────
+$btn-primary-bg: $primary;
+$btn-primary-text: #ffffff;
+$btn-primary-border: $primary-dark;
+$btn-primary-hover: $primary-dark;
+
+$btn-light-bg: rgba(61, 153, 252, 0.15);
+$btn-light-text: $primary;
+$btn-light-hover-bg: $primary-dark;
+$btn-light-hover-text: #ffffff;
+
+// ─── Status Badges ───────────────────────────────────────────────────────────
+$status-open-bg: #e3f2fd;
+$status-open-text: #1976d2;
+$status-progress-bg: #fff3e0;
+$status-progress-text: #e65100;
+$status-resolved-bg: #e8f5e9;
+$status-resolved-text: #2e7d32;
+$status-closed-bg: #f5f5f5;
+$status-closed-text: #757575;
+
+// ─── Utility Colors ──────────────────────────────────────────────────────────
+$color-green: #91C300;
+$color-red: #f03d4f;
+$color-orange: #ff9800;
+$color-cyan: #00C2FF;
+$color-yellow: #ffc107;
+
+// ─── Typography ──────────────────────────────────────────────────────────────
+$font-body: 'Open Sans', sans-serif;
+$font-heading: 'Nunito', sans-serif;
+$font-weight-normal: 400;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-size-base: 14px;
+$line-height-base: 1.4;
+
+// ─── Border Radius ───────────────────────────────────────────────────────────
+$radius-default: 4px;
+$radius-button: 8px;
+$radius-pill: 8px;
+$radius-modal: 16px;
+
+// ─── Shadows ─────────────────────────────────────────────────────────────────
+$shadow-card: 0 0.05rem 0.05rem rgba(0,0,0,0.025), 0 0.095rem 0.3rem rgba(0,0,0,0.065);
+$shadow-dropdown: 0 0.1rem 0.15rem rgba(0,0,0,0.015), 0 0.45rem 1rem rgba(0,0,0,0.1);

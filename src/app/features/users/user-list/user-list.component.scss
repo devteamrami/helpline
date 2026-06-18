@@ -5,7 +5,7 @@
 
 .user-list-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  background: #1a1d21;
   padding: 2rem;
   animation: fadeIn 0.5s ease-out;
 }
@@ -20,7 +20,7 @@
 // ============================================
 
 .page-header {
-  background: white;
+  background: rgba(42, 46, 51, 0.65);
   border-radius: 20px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -49,13 +49,13 @@
   h1 {
     font-size: 2rem;
     font-weight: 700;
-    color: #1a202c;
+    color: #ffffff;
     margin: 0 0 0.5rem 0;
   }
 
   p {
     font-size: 1rem;
-    color: #718096;
+    color: #999999;
     margin: 0;
   }
 }
@@ -74,7 +74,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #3d99fc;
   color: white;
   border: none;
   border-radius: 12px;
@@ -82,11 +82,11 @@
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(61, 153, 252, 0.3);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(61, 153, 252, 0.4);
   }
 
   &:active {
@@ -96,9 +96,9 @@
 
 .btn-secondary {
   padding: 0.75rem 1.5rem;
-  background: #f7fafc;
-  color: #4a5568;
-  border: 2px solid #e2e8f0;
+  background: rgba(42, 46, 51, 0.65);
+  color: #cccccc;
+  border: 1px solid rgba(255, 255, 255, 0.085);
   border-radius: 12px;
   font-weight: 600;
   font-size: 0.875rem;
@@ -106,7 +106,7 @@
   transition: all 0.2s;
 
   &:hover {
-    background: #edf2f7;
+    background: rgba(42, 46, 51, 0.75);
     border-color: #cbd5e0;
   }
 }
@@ -116,8 +116,8 @@
   height: 36px;
   border-radius: 8px;
   border: none;
-  background: #f7fafc;
-  color: #4a5568;
+  background: rgba(42, 46, 51, 0.65);
+  color: #cccccc;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -125,8 +125,8 @@
   transition: all 0.2s;
 
   &:hover {
-    background: #edf2f7;
-    color: #2d3748;
+    background: rgba(42, 46, 51, 0.75);
+    color: #ffffff;
     transform: scale(1.1);
   }
 
@@ -150,7 +150,7 @@
 // ============================================
 
 .filters-section {
-  background: white;
+  background: rgba(42, 46, 51, 0.65);
   border-radius: 20px;
   padding: 1.5rem;
   margin-bottom: 2rem;
@@ -184,16 +184,16 @@
   label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #4a5568;
+    color: #cccccc;
   }
 
   select {
     padding: 0.75rem 1rem;
-    border: 2px solid #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.085);
     border-radius: 10px;
     font-size: 0.875rem;
-    color: #2d3748;
-    background: white;
+    color: #ffffff;
+    background: rgba(42, 46, 51, 0.65);
     cursor: pointer;
     transition: all 0.2s;
 
@@ -203,8 +203,8 @@
 
     &:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: #3d99fc;
+      box-shadow: 0 0 0 3px rgba(61, 153, 252, 0.1);
     }
   }
 }
@@ -225,10 +225,10 @@
     input {
       width: 100%;
       padding: 0.75rem 1rem 0.75rem 3rem;
-      border: 2px solid #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.085);
       border-radius: 10px;
       font-size: 0.875rem;
-      color: #2d3748;
+      color: #ffffff;
       transition: all 0.2s;
 
       &::placeholder {
@@ -241,8 +241,8 @@
 
       &:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: #3d99fc;
+        box-shadow: 0 0 0 3px rgba(61, 153, 252, 0.1);
       }
     }
   }
@@ -252,7 +252,7 @@
   display: flex;
   align-items: center;
   padding: 0.75rem 1.25rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #3d99fc;
   color: white;
   border-radius: 10px;
   font-weight: 600;
@@ -270,22 +270,22 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  background: white;
+  background: rgba(42, 46, 51, 0.65);
   border-radius: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 
   .spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid #e2e8f0;
-    border-top-color: #667eea;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #3d99fc;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
 
   p {
     margin-top: 1rem;
-    color: #718096;
+    color: #999999;
     font-size: 1rem;
   }
 }
@@ -304,7 +304,7 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  background: white;
+  background: rgba(42, 46, 51, 0.65);
   border-radius: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   text-align: center;
@@ -317,12 +317,12 @@
   h3 {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1a202c;
+    color: #ffffff;
     margin: 0 0 0.5rem 0;
   }
 
   p {
-    color: #718096;
+    color: #999999;
     margin: 0 0 1.5rem 0;
   }
 }
@@ -337,7 +337,7 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  background: white;
+  background: rgba(42, 46, 51, 0.65);
   border-radius: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   text-align: center;
@@ -350,12 +350,12 @@
   h3 {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1a202c;
+    color: #ffffff;
     margin: 0 0 0.5rem 0;
   }
 
   p {
-    color: #718096;
+    color: #999999;
     margin: 0;
   }
 }
@@ -365,7 +365,7 @@
 // ============================================
 
 .table-section {
-  background: white;
+  background: rgba(42, 46, 51, 0.65);
   border-radius: 20px;
   padding: 2rem;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
@@ -383,14 +383,14 @@
 
   thead {
     tr {
-      border-bottom: 2px solid #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.085);
 
       th {
         padding: 1rem;
         text-align: left;
         font-size: 0.75rem;
         font-weight: 700;
-        color: #718096;
+        color: #999999;
         text-transform: uppercase;
         letter-spacing: 0.5px;
 
@@ -400,7 +400,7 @@
           transition: color 0.2s;
 
           &:hover {
-            color: #667eea;
+            color: #3d99fc;
           }
 
           svg {
@@ -423,21 +423,21 @@
 
   tbody {
     tr.user-row {
-      border-bottom: 1px solid #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.085);
       cursor: pointer;
       transition: all 0.2s;
 
       &:hover {
-        background: #f7fafc;
+        background: rgba(42, 46, 51, 0.65);
       }
 
       td {
         padding: 1rem;
         font-size: 0.875rem;
-        color: #2d3748;
+        color: #ffffff;
 
         &.date-cell {
-          color: #718096;
+          color: #999999;
         }
 
         &.actions-cell {
@@ -458,7 +458,7 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #3d99fc;
   color: white;
   display: flex;
   align-items: center;
@@ -475,7 +475,7 @@
 
   .user-name {
     font-weight: 600;
-    color: #1a202c;
+    color: #ffffff;
   }
 
   .user-email {
@@ -498,7 +498,7 @@
   }
 
   &.role-admin {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #3d99fc;
     color: white;
   }
 
@@ -513,12 +513,12 @@
   }
 
   &.role-viewer {
-    background: #edf2f7;
-    color: #4a5568;
+    background: rgba(42, 46, 51, 0.75);
+    color: #cccccc;
   }
 
   &.role-default {
-    background: #f7fafc;
+    background: rgba(42, 46, 51, 0.65);
     color: #a0aec0;
   }
 }
@@ -562,10 +562,10 @@
   min-width: 40px;
   height: 40px;
   padding: 0 0.75rem;
-  border: 2px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.085);
   border-radius: 10px;
-  background: white;
-  color: #4a5568;
+  background: rgba(42, 46, 51, 0.65);
+  color: #cccccc;
   font-weight: 600;
   font-size: 0.875rem;
   cursor: pointer;
@@ -575,14 +575,14 @@
   justify-content: center;
 
   &:hover:not(:disabled) {
-    border-color: #667eea;
-    color: #667eea;
+    border-color: #3d99fc;
+    color: #3d99fc;
     transform: translateY(-2px);
   }
 
   &.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-color: #667eea;
+    background: #3d99fc;
+    border-color: #3d99fc;
     color: white;
   }
 

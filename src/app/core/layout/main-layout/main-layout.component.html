@@ -12,14 +12,8 @@
     <div class="logo-section">
       <div class="logo">
         <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="48" height="48" rx="12" fill="url(#gradient)"/>
+          <rect width="48" height="48" rx="12" fill="#3d99fc"/>
           <path d="M24 12L34 18V30L24 36L14 30V18L24 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <defs>
-            <linearGradient id="gradient" x1="0" y1="0" x2="48" y2="48">
-              <stop offset="0%" stop-color="#667eea"/>
-              <stop offset="100%" stop-color="#764ba2"/>
-            </linearGradient>
-          </defs>
         </svg>
       </div>
       <div class="logo-text">
@@ -143,6 +137,18 @@
 
   <!-- Page Content -->
   <main class="page-content">
+    <!-- Notification Bell (fixed position, visible on all pages) -->
+    <button 
+      class="notification-bell"
+      [class.jiggle]="bellJiggle"
+      (click)="onBellClick()"
+      title="Activities"
+    >
+      <svg width="22" height="22" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+      </svg>
+      <span class="notification-badge" *ngIf="unseenCount > 0">{{ unseenCount > 99 ? '99+' : unseenCount }}</span>
+    </button>
     <router-outlet></router-outlet>
   </main>
 </div>

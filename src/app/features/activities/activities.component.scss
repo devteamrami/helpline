@@ -1,0 +1,248 @@
+/**
+ * Activities Page Styles
+ * Full page view for all activities with pagination
+ */
+
+.activities-page {
+  min-height: 100vh;
+  background: #1a1d21;
+  padding: 2rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.activities-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+// ============================================
+// HEADER
+// ============================================
+
+.activities-header {
+  margin-bottom: 2rem;
+
+  h2 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 0.5rem 0;
+  }
+}
+
+.activities-subtitle {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+  color: #999999;
+  margin: 0;
+}
+
+// ============================================
+// LOADING
+// ============================================
+
+.activities-loading {
+  text-align: center;
+  padding: 3rem;
+  color: #999999;
+  font-size: 1rem;
+}
+
+// ============================================
+// ACTIVITY CARDS
+// ============================================
+
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.activity-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(42, 46, 51, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: rgba(61, 153, 252, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateX(4px);
+
+    .activity-card-dismiss {
+      opacity: 1;
+    }
+  }
+}
+
+.activity-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(61, 153, 252, 0.1);
+  font-size: 1.3rem;
+}
+
+.activity-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-card-text {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.9rem;
+  color: #ffffff;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.5;
+
+  strong {
+    font-weight: 600;
+    color: #ffffff;
+  }
+}
+
+.activity-card-target {
+  color: #3d99fc;
+  font-weight: 500;
+}
+
+.activity-card-time {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.75rem;
+  color: #999999;
+}
+
+.activity-card-dismiss {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  padding: 0.25rem;
+  border-radius: 6px;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.15);
+    transform: scale(1.1);
+  }
+}
+
+// ============================================
+// EMPTY STATE
+// ============================================
+
+.activities-empty {
+  text-align: center;
+  padding: 3rem;
+  color: #999999;
+  font-size: 1rem;
+  background: rgba(42, 46, 51, 0.65);
+  border-radius: 14px;
+}
+
+// ============================================
+// PAGINATION
+// ============================================
+
+.activities-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem 0;
+}
+
+.pagination-btn {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(42, 46, 51, 0.65);
+  color: #3d99fc;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #3d99fc;
+    color: #ffffff;
+    border-color: #3d99fc;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.pagination-pages {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pagination-page {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(42, 46, 51, 0.65);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #3d99fc;
+    color: #3d99fc;
+  }
+
+  &.active {
+    background: #3d99fc;
+    color: #ffffff;
+    border-color: #3d99fc;
+  }
+}
+
+// ============================================
+// RESPONSIVE
+// ============================================
+
+@media (max-width: 768px) {
+  .activities-page {
+    padding: 1rem;
+  }
+
+  .activity-card {
+    padding: 1rem;
+  }
+
+  .activities-pagination {
+    flex-wrap: wrap;
+  }
+}

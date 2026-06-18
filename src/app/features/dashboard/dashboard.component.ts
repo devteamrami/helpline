@@ -9,6 +9,9 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/user.model';
 import { Subject, takeUntil } from 'rxjs';
+import { DashboardService, DashboardStats } from './dashboard.service';
+import { ActivityService } from '../activities/activity.service';
+import { Activity } from '../activities/activity.model';
 
 interface StatCard {
   title: string;
@@ -17,16 +20,6 @@ interface StatCard {
   icon: string;
   color: string;
   trend: 'up' | 'down';
-}
-
-interface Activity {
-  id: string;
-  user: string;
-  action: string;
-  target: string;
-  time: string;
-  icon: string;
-  color: string;
 }
 
 interface Project {
@@ -47,12 +40,15 @@ interface Project {
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
+  private dashboardService = inject(DashboardService);
+  private activityService = inject(ActivityService);
   private router = inject(Router);
   private destroy$ = new Subject<void>();
 
   currentUser: User | null = null;
   currentTime: Date = new Date();
   greeting: string = '';
+  dashboardStats: DashboardStats | null = null;
 
   stats: StatCard[] = [
     {
@@ -89,44 +85,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   ];
 
-  recentActivities: Activity[] = [
-    {
-      id: '1',
-      user: 'John Doe',
-      action: 'completed task',
-      target: 'Update user authentication',
-      time: '5 minutes ago',
-      icon: 'check',
-      color: 'green'
-    },
-    {
-      id: '2',
-      user: 'Sarah Smith',
-      action: 'created project',
-      target: 'Mobile App Redesign',
-      time: '1 hour ago',
-      icon: 'plus',
-      color: 'blue'
-    },
-    {
-      id: '3',
-      user: 'Mike Johnson',
-      action: 'commented on',
-      target: 'API Integration',
-      time: '2 hours ago',
-      icon: 'comment',
-      color: 'purple'
-    },
-    {
-      id: '4',
-      user: 'Emily Brown',
-      action: 'assigned task to',
-      target: 'Database Optimization',
-      time: '3 hours ago',
-      icon: 'user',
-      color: 'orange'
-    }
-  ];
+  recentActivities: Activity[] = [];
 
   activeProjects: Project[] = [
     {
@@ -171,11 +130,116 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.updateGreeting();
       });
 
+    // Load real stats from API
+    this.dashboardService.getStats()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data) => {
+        if (data) {
+          this.dashboardStats = data;
+          this.stats = [
+            {
+              title: 'Total Projects',
+              value: data.projects.total,
+              change: data.projects.active,
+              icon: 'projects',
+              color: 'purple',
+              trend: 'up'
+            },
+            {
+              title: 'Active Tasks',
+              value: data.tasks.active,
+              change: data.tasks.total,
+              icon: 'tasks',
+              color: 'blue',
+              trend: 'up'
+            },
+            {
+              title: 'Team Members',
+              value: data.teamMembers,
+              change: 0,
+              icon: 'team',
+              color: 'green',
+              trend: 'up'
+            },
+            {
+              title: 'Support Tickets',
+              value: data.tickets.total,
+              change: data.tickets.open + data.tickets.inProgress,
+              icon: 'completed',
+              color: 'orange',
+              trend: 'up'
+            }
+          ];
+        }
+      });
+
     // Update time every minute
     setInterval(() => {
       this.currentTime = new Date();
       this.updateGreeting();
     }, 60000);
+
+    // Load recent activities
+    this.loadActivities();
+  }
+
+  loadActivities(): void {
+    this.activityService.getActivities(1, 5)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        this.recentActivities = res.activities;
+      });
+  }
+
+  dismissActivity(id: string): void {
+    if (confirm('Are you sure you want to dismiss this activity?')) {
+      this.activityService.dismissActivity(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.recentActivities = this.recentActivities.filter(a => a.id !== id);
+        });
+    }
+  }
+
+  goToTicket(ticketId: string): void {
+    this.router.navigate(['/tickets', ticketId]);
+  }
+
+  goToActivities(): void {
+    this.router.navigate(['/activities']);
+  }
+
+  getRelativeTime(dateStr: string): string {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMinutes < 1) return 'just now';
+    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  }
+
+  formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    const day = date.getDate();
+    const suffix = this.getDaySuffix(day);
+    const month = date.toLocaleString('en-US', { month: 'long' });
+    const year = date.getFullYear();
+    return `${day}${suffix} ${month} ${year}`;
+  }
+
+  private getDaySuffix(day: number): string {
+    if (day >= 11 && day <= 13) return 'th';
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
   }
 
   ngOnDestroy(): void {
