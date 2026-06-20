@@ -81,8 +81,8 @@
             </div>
             <div class="breakdown-item">
               <span class="breakdown-dot" style="background: #f03d4f;"></span>
-              <span class="breakdown-label">Blocked</span>
-              <span class="breakdown-value">{{ dashboardStats.tasks.blocked }}</span>
+              <span class="breakdown-label">Archived</span>
+              <span class="breakdown-value">{{ dashboardStats.tasks.archived }}</span>
             </div>
           </div>
         </div>
@@ -122,47 +122,40 @@
 
     <!-- Content Grid -->
     <div class="content-grid">
-      <!-- Active Projects -->
+      <!-- Todo Tickets -->
       <section class="projects-section">
         <div class="section-header">
-          <h3>Active Projects</h3>
-          <button class="view-all-button">View All →</button>
+          <h3>🎫 Open Tickets</h3>
+          <button class="view-all-button" (click)="goToTickets()">View All →</button>
         </div>
-        <div class="projects-list">
-          <div class="project-card" *ngFor="let project of activeProjects">
-            <div class="project-header">
-              <div class="project-info">
-                <h4>{{ project.name }}</h4>
-                <span class="project-status" [ngClass]="getStatusClass(project.status)">
-                  {{ project.status }}
-                </span>
-              </div>
-              <button class="project-menu">⋮</button>
+        <div class="projects-list" *ngIf="todoTickets.length > 0">
+          <div class="ticket-card" *ngFor="let ticket of todoTickets">
+            <div class="ticket-card-header">
+              <div class="ticket-card-title" (click)="goToTicketDetail(ticket.id)">{{ ticket.ticket_name }}</div>
+              <span class="ticket-card-status">{{ ticket.status }}</span>
+              <button class="ticket-card-toggle" (click)="ticket._expanded = !ticket._expanded">
+                {{ ticket._expanded ? '▲' : '▼' }}
+              </button>
             </div>
-            <div class="project-progress">
-              <div class="progress-info">
-                <span>Progress</span>
-                <span class="progress-value">{{ project.progress }}%</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="project.progress" [style.background-color]="getProgressColor(project.progress)"></div>
-              </div>
+            <div class="ticket-card-meta">
+              <span>👤 {{ ticket.user_first_name }} {{ ticket.user_last_name || '' }}</span>
+              <span>🏢 {{ ticket.site_name }}</span>
+              <span>📅 {{ formatTicketDate(ticket.created_at) }}</span>
             </div>
-            <div class="project-footer">
-              <div class="project-team">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
-                </svg>
-                <span>{{ project.team }} members</span>
-              </div>
-              <div class="project-due">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                </svg>
-                <span>{{ project.dueDate }}</span>
+            <p class="ticket-card-desc" *ngIf="!ticket._expanded">{{ truncateText(ticket.description, 25) }}</p>
+            <!-- Expanded details -->
+            <div class="ticket-card-expanded" *ngIf="ticket._expanded">
+              <p class="ticket-card-desc-full">{{ ticket.description }}</p>
+              <div class="ticket-card-details">
+                <div><strong>User ID:</strong> {{ ticket.user_id }}</div>
+                <div><strong>Site ID:</strong> {{ ticket.site_id }}</div>
+                <div><strong>Page:</strong> <a [href]="ticket.page_url" target="_blank">{{ ticket.page_url }}</a></div>
               </div>
             </div>
           </div>
+        </div>
+        <div class="activity-empty" *ngIf="todoTickets.length === 0">
+          <p>No open tickets</p>
         </div>
       </section>
 

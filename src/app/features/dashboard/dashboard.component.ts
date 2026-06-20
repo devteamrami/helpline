@@ -54,6 +54,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   dashboardStats: DashboardStats | null = null;
   unseenCount = 0;
   bellJiggle = false;
+  todoTickets: any[] = [];
 
   stats: StatCard[] = [
     {
@@ -160,6 +161,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       });
 
+    // Load open tickets
+    this.dashboardService.getTodoTickets()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((tickets) => {
+        this.todoTickets = tickets.map(t => ({ ...t, _expanded: false }));
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      });
+
     // Load activities
     this.activityService.getActivities(1, 5)
       .pipe(takeUntil(this.destroy$))
@@ -200,8 +210,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/tickets', ticketId]);
   }
 
+  goToTicketDetail(ticketId: string): void {
+    this.router.navigate(['/tickets', ticketId]);
+  }
+
+  goToTickets(): void {
+    this.router.navigate(['/tickets']);
+  }
+
   goToActivities(): void {
     this.router.navigate(['/activities']);
+  }
+
+  truncateText(text: string, wordCount: number): string {
+    if (!text) return '';
+    const words = text.split(/\s+/);
+    if (words.length <= wordCount) return text;
+    return words.slice(0, wordCount).join(' ') + '...';
+  }
+
+  formatTicketDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
   onBellClick(): void {
