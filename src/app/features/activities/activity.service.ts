@@ -7,7 +7,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ActivityResponse } from './activity.model';
+import { Activity, ActivityResponse } from './activity.model';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService {
@@ -24,15 +24,7 @@ export class ActivityService {
       )
       .pipe(
         map((res) => ({
-          activities: (res.data.activities || []).map((a: any) => ({
-            id: a.id,
-            type: a.type,
-            ticketId: a.ticket_id,
-            actorName: a.actor_name,
-            actorEmail: a.actor_email,
-            message: a.message,
-            createdAt: a.created_at,
-          })),
+          activities: (res.data.activities || []).map((a: any) => this.mapActivity(a)),
           pagination: res.data.pagination,
         }))
       );
@@ -47,5 +39,22 @@ export class ActivityService {
         `${environment.apiUrl}/activities/${id}/dismiss`
       )
       .pipe(map(() => undefined));
+  }
+
+  /**
+   * Map raw API response to Activity interface.
+   */
+  private mapActivity(a: any): Activity {
+    return {
+      id: a.id,
+      type: a.type,
+      resourceId: a.resource_id || null,
+      resourceType: a.resource_type || null,
+      projectId: a.project_id || null,
+      actorName: a.actor_name,
+      actorEmail: a.actor_email,
+      message: a.message,
+      createdAt: a.created_at,
+    };
   }
 }

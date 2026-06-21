@@ -1,0 +1,93 @@
+<div class="dialog-overlay" (click)="close()">
+  <div class="dialog-container" (click)="$event.stopPropagation()">
+    <!-- Dialog Header -->
+    <div class="dialog-header">
+      <h2>{{ mode === 'create' ? 'Create Department' : 'Edit Department' }}</h2>
+      <button class="close-button" (click)="close()">
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Dialog Content -->
+    <div class="dialog-content">
+      <form [formGroup]="departmentForm" (ngSubmit)="onSubmit()">
+        <!-- Error Message -->
+        @if (errorMessage) {
+          <div class="error-banner">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+
+        <!-- Department Name -->
+        <div class="form-group">
+          <label for="name">Department Name <span class="required">*</span></label>
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            placeholder="e.g., Engineering, Marketing"
+            [class.error]="hasError('name', 'required') || hasError('name', 'maxlength')"
+          />
+          @if (getErrorMessage('name')) {
+            <span class="error-message">{{ getErrorMessage('name') }}</span>
+          }
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            placeholder="Brief description of this department"
+            rows="3"
+            [class.error]="hasError('description', 'maxlength')"
+          ></textarea>
+          @if (getErrorMessage('description')) {
+            <span class="error-message">{{ getErrorMessage('description') }}</span>
+          }
+        </div>
+
+        <!-- Status (only in edit mode) -->
+        @if (mode === 'edit') {
+          <div class="form-group">
+            <label for="is_active">Status</label>
+            <select id="is_active" formControlName="is_active">
+              <option [ngValue]="true">Active</option>
+              <option [ngValue]="false">Inactive</option>
+            </select>
+          </div>
+        }
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="close()"
+            [disabled]="isSubmitting"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="departmentForm.invalid || isSubmitting"
+          >
+            @if (isSubmitting) {
+              <div class="button-spinner"></div>
+              <span>{{ mode === 'create' ? 'Creating...' : 'Updating...' }}</span>
+            } @else {
+              <span>{{ mode === 'create' ? 'Create Department' : 'Update Department' }}</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

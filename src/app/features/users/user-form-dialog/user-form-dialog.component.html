@@ -115,20 +115,21 @@
           }
         </div>
 
-        <!-- Role -->
+        <!-- Department -->
         <div class="form-group">
-          <label for="role">Role <span class="required">*</span></label>
+          <label for="departmentId">Department <span class="required">*</span></label>
           <select
-            id="role"
-            formControlName="role"
-            [class.error]="hasError('role', 'required')"
+            id="departmentId"
+            formControlName="departmentId"
+            [class.error]="hasError('departmentId', 'required')"
           >
-            @for (role of roles; track role.value) {
-              <option [value]="role.value">{{ role.label }}</option>
+            <option value="">Select Department</option>
+            @for (dept of departments; track dept.id) {
+              <option [value]="dept.id">{{ dept.name | titlecase }}</option>
             }
           </select>
-          @if (getErrorMessage('role')) {
-            <span class="error-message">{{ getErrorMessage('role') }}</span>
+          @if (getErrorMessage('departmentId')) {
+            <span class="error-message">{{ getErrorMessage('departmentId') }}</span>
           }
         </div>
 

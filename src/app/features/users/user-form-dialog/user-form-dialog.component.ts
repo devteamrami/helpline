@@ -12,8 +12,11 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import Swal from 'sweetalert2';
 
 import { UserService } from '../../../core/services/user.service';
+import { DepartmentService } from '../../../core/services/department.service';
+import { Department } from '../../../core/models/department.model';
 import { User, CreateUserRequest, UpdateUserRequest } from '../../../core/models/user.model';
 
 // Simple dialog data interface
@@ -38,6 +41,7 @@ export interface UserFormDialogResult {
 export class UserFormDialogComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
+  private departmentService = inject(DepartmentService);
   private destroy$ = new Subject<void>();
 
   // Dialog data (passed from parent)
@@ -52,14 +56,8 @@ export class UserFormDialogComponent implements OnInit, OnDestroy {
   // Password strength
   passwordStrength: 'weak' | 'medium' | 'strong' = 'weak';
 
-  // Available roles
-  roles = [
-    { value: 'viewer', label: 'Viewer' },
-    { value: 'developer', label: 'Developer' },
-    { value: 'manager', label: 'Manager' },
-    { value: 'admin', label: 'Admin' },
-    { value: 'superadmin', label: 'Super Admin' },
-  ];
+  // Departments
+  departments: Department[] = [];
 
   // Callback functions (set by parent)
   onClose?: () => void;
@@ -67,6 +65,7 @@ export class UserFormDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initForm();
+    this.loadDepartments();
 
     // Load user data if in edit mode
     if (this.mode === 'edit' && this.user) {
@@ -109,19 +108,19 @@ export class UserFormDialogComponent implements OnInit, OnDestroy {
           [
             Validators.required,
             Validators.minLength(8),
-            Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/),
+            Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/),
           ],
         ],
         firstName: ['', [Validators.maxLength(100), Validators.pattern(/^[a-zA-Z\s]*$/)]],
         lastName: ['', [Validators.maxLength(100), Validators.pattern(/^[a-zA-Z\s]*$/)]],
-        role: ['developer', Validators.required],
+        departmentId: ['', Validators.required],
       });
     } else {
       // Edit mode - email, username, password are immutable
       this.userForm = this.fb.group({
         firstName: ['', [Validators.maxLength(100), Validators.pattern(/^[a-zA-Z\s]*$/)]],
         lastName: ['', [Validators.maxLength(100), Validators.pattern(/^[a-zA-Z\s]*$/)]],
-        role: ['', Validators.required],
+        departmentId: ['', Validators.required],
       });
     }
   }
@@ -135,8 +134,25 @@ export class UserFormDialogComponent implements OnInit, OnDestroy {
     this.userForm.patchValue({
       firstName: this.user.firstName || '',
       lastName: this.user.lastName || '',
-      role: this.user.role || 'developer',
+      departmentId: this.user.departmentId || '',
     });
+  }
+
+  /**
+   * Load departments for dropdown
+   */
+  loadDepartments(): void {
+    this.departmentService
+      .getDepartments({ isActive: true })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (departments) => {
+          this.departments = departments;
+        },
+        error: () => {
+          this.departments = [];
+        },
+      });
   }
 
   /**
@@ -158,7 +174,7 @@ export class UserFormDialogComponent implements OnInit, OnDestroy {
     if (/[a-z]/.test(password)) strength++;
     if (/[A-Z]/.test(password)) strength++;
     if (/\d/.test(password)) strength++;
-    if (/[@$!%*?&]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
 
     if (strength <= 2) {
       this.passwordStrength = 'weak';
@@ -197,6 +213,15 @@ export class UserFormDialogComponent implements OnInit, OnDestroy {
     this.userService.createUser(userData).subscribe({
       next: (user) => {
         this.isSubmitting = false;
+        Swal.fire({
+          icon: 'success',
+          title: 'User Created',
+          text: 'The user has been created successfully.',
+          timer: 2500,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end',
+        });
         if (this.onSuccess) {
           this.onSuccess(user);
         }
@@ -205,6 +230,12 @@ export class UserFormDialogComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.isSubmitting = false;
         this.errorMessage = error.message || 'Failed to create user';
+        Swal.fire({
+          icon: 'error',
+          title: 'User Creation Failed',
+          text: this.errorMessage,
+          confirmButtonColor: '#3d99fc',
+        });
       },
     });
   }
@@ -220,6 +251,15 @@ export class UserFormDialogComponent implements OnInit, OnDestroy {
     this.userService.updateUser(this.user.id, updateData).subscribe({
       next: (user) => {
         this.isSubmitting = false;
+        Swal.fire({
+          icon: 'success',
+          title: 'User Updated',
+          text: 'The user has been updated successfully.',
+          timer: 2500,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end',
+        });
         if (this.onSuccess) {
           this.onSuccess(user);
         }
@@ -228,6 +268,12 @@ export class UserFormDialogComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.isSubmitting = false;
         this.errorMessage = error.message || 'Failed to update user';
+        Swal.fire({
+          icon: 'error',
+          title: 'Update Failed',
+          text: this.errorMessage,
+          confirmButtonColor: '#3d99fc',
+        });
       },
     });
   }
@@ -310,7 +356,7 @@ export class UserFormDialogComponent implements OnInit, OnDestroy {
       password: 'Password',
       firstName: 'First Name',
       lastName: 'Last Name',
-      role: 'Role',
+      departmentId: 'Department',
     };
     return labels[fieldName] || fieldName;
   }

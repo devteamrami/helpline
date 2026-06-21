@@ -170,11 +170,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       });
 
-    // Load activities
-    this.activityService.getActivities(1, 5)
+    // Load activities — show 5 latest ticket activities first, then others
+    this.activityService.getActivities(1, 20)
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
-        this.recentActivities = res.activities;
+        const all = res.activities;
+        const ticketActivities = all
+          .filter(a => a.type === 'ticket_created' || a.type === 'ticket_reply')
+          .slice(0, 5);
+        const otherActivities = all
+          .filter(a => a.type !== 'ticket_created' && a.type !== 'ticket_reply');
+        this.recentActivities = [...ticketActivities, ...otherActivities].slice(0, 10);
         this.cdr.markForCheck();
         this.cdr.detectChanges();
       });
@@ -212,6 +218,40 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   goToTicketDetail(ticketId: string): void {
     this.router.navigate(['/tickets', ticketId]);
+  }
+
+  navigateToResource(activity: Activity): void {
+    switch (activity.resourceType) {
+      case 'ticket':
+        if (activity.resourceId) this.router.navigate(['/tickets', activity.resourceId]);
+        break;
+      case 'project':
+        if (activity.resourceId) this.router.navigate(['/projects', activity.resourceId]);
+        break;
+      case 'task':
+        if (activity.projectId && activity.resourceId) {
+          this.router.navigate(['/projects', activity.projectId, 'tasks', activity.resourceId]);
+        }
+        break;
+    }
+  }
+
+  getActivityIcon(type: string): string {
+    const icons: Record<string, string> = {
+      ticket_created: '🎫',
+      ticket_reply: '💬',
+      project_created: '📁',
+      project_updated: '✏️',
+      project_archived: '📦',
+      task_created: '✅',
+      task_updated: '🔄',
+      task_deleted: '🗑️',
+      task_commented: '💬',
+      task_started: '▶️',
+      task_paused: '⏸️',
+      task_completed: '🎉',
+    };
+    return icons[type] || '📋';
   }
 
   goToTickets(): void {

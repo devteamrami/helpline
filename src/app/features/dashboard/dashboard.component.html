@@ -166,33 +166,34 @@
           <button class="view-all-button" (click)="goToActivities()">View All →</button>
         </div>
         <div class="activity-list">
-          <div class="activity-item" *ngFor="let activity of recentActivities" (click)="goToTicket(activity.ticketId)">
-            <div class="activity-icon-emoji">
-              <span *ngIf="activity.type === 'ticket_created'">🎫</span>
-              <span *ngIf="activity.type === 'ticket_reply'">💬</span>
+          @for (activity of recentActivities; track activity.id) {
+            <div class="activity-item" (click)="navigateToResource(activity)">
+              <div class="activity-icon-emoji">
+                <span>{{ getActivityIcon(activity.type) }}</span>
+              </div>
+              <div class="activity-content">
+                <p>
+                  <strong>{{ activity.actorName }}</strong>
+                  <span class="activity-target">{{ activity.message }}</span>
+                </p>
+                <span class="activity-time">{{ formatDate(activity.createdAt) }}, {{ getRelativeTime(activity.createdAt) }}</span>
+              </div>
+              <button class="activity-dismiss-btn" (click)="dismissActivity(activity.id); $event.stopPropagation()" title="Dismiss">
+                ✕
+              </button>
             </div>
-            <div class="activity-content">
-              <p>
-                <strong>{{ activity.actorName }}</strong>
-                <span *ngIf="activity.type === 'ticket_created'"> created ticket </span>
-                <span *ngIf="activity.type === 'ticket_reply'"> replied on ticket </span>
-                <span class="activity-target">{{ activity.message }}</span>
-              </p>
-              <span class="activity-time">{{ formatDate(activity.createdAt) }}, {{ getRelativeTime(activity.createdAt) }}</span>
+          }
+          @if (recentActivities.length === 0) {
+            <div class="activity-empty">
+              <p>No recent activities</p>
             </div>
-            <button class="activity-dismiss-btn" (click)="dismissActivity(activity.id); $event.stopPropagation()" title="Dismiss">
-              🗑️
-            </button>
-          </div>
-          <div class="activity-empty" *ngIf="recentActivities.length === 0">
-            <p>No recent activities</p>
-          </div>
+          }
         </div>
       </section>
     </div>
 
     <!-- Quick Actions -->
-    <section class="quick-actions">
+    <!-- <section class="quick-actions">
       <h3>Quick Actions</h3>
       <div class="actions-grid">
         <button class="action-button">
@@ -222,6 +223,6 @@
           <span>View Reports</span>
         </button>
       </div>
-    </section>
+    </section> -->
   </main>
 </div>

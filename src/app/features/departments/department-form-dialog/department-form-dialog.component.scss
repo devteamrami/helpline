@@ -1,6 +1,6 @@
 /**
- * User Form Dialog Component Styles
- * Modern modal dialog with smooth animations
+ * Department Form Dialog Styles
+ * Matches existing user-form-dialog dark theme
  */
 
 // ============================================
@@ -24,12 +24,8 @@
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 // ============================================
@@ -40,7 +36,7 @@
   background: rgba(42, 46, 51, 0.65);
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 600px;
+  max-width: 500px;
   width: 100%;
   max-height: 90vh;
   display: flex;
@@ -68,7 +64,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem 2rem 1.5rem 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.085);
 
   h2 {
     font-size: 1.5rem;
@@ -106,25 +102,6 @@
   padding: 2rem;
   overflow-y: auto;
   flex: 1;
-
-  /* Custom scrollbar */
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: rgba(42, 46, 51, 0.65);
-    border-radius: 10px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
-    border-radius: 10px;
-
-    &:hover {
-      background: #a0aec0;
-    }
-  }
 }
 
 // ============================================
@@ -187,7 +164,8 @@ form {
   }
 
   input,
-  select {
+  select,
+  textarea {
     padding: 0.875rem 1rem;
     border: 1px solid rgba(255, 255, 255, 0.085);
     border-radius: 12px;
@@ -196,6 +174,7 @@ form {
     background: rgba(42, 46, 51, 0.65);
     transition: all 0.2s;
     font-family: inherit;
+    resize: vertical;
 
     &::placeholder {
       color: #a0aec0;
@@ -213,17 +192,10 @@ form {
 
     &.error {
       border-color: #f56565;
-      background: rgba(245, 101, 101, 0.08);
 
       &:focus {
         box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
       }
-    }
-
-    &:disabled {
-      background: rgba(42, 46, 51, 0.65);
-      color: #a0aec0;
-      cursor: not-allowed;
     }
   }
 
@@ -234,86 +206,16 @@ form {
     background-repeat: no-repeat;
     background-position: right 1rem center;
     padding-right: 3rem;
+  }
 
-    option {
-      background: #2a2e33;
-      color: #ffffff;
-    }
+  textarea {
+    min-height: 80px;
   }
 
   .error-message {
     font-size: 0.75rem;
     color: #e53e3e;
     font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .field-hint {
-    font-size: 0.75rem;
-    color: #999999;
-    font-style: italic;
-  }
-}
-
-// ============================================
-// PASSWORD STRENGTH INDICATOR
-// ============================================
-
-.password-strength {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.strength-bar {
-  flex: 1;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-
-  .strength-fill {
-    height: 100%;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-  }
-
-  &.strength-weak .strength-fill {
-    width: 33%;
-    background: linear-gradient(90deg, #f56565 0%, #e53e3e 100%);
-  }
-
-  &.strength-medium .strength-fill {
-    width: 66%;
-    background: linear-gradient(90deg, #ed8936 0%, #dd6b20 100%);
-  }
-
-  &.strength-strong .strength-fill {
-    width: 100%;
-    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
-  }
-}
-
-.strength-text {
-  font-size: 0.75rem;
-  font-weight: 600;
-  min-width: 60px;
-  text-align: right;
-
-  &.strength-weak {
-    color: #e53e3e;
-  }
-
-  &.strength-medium {
-    color: #dd6b20;
-  }
-
-  &.strength-strong {
-    color: #38a169;
   }
 }
 
@@ -326,7 +228,7 @@ form {
   gap: 1rem;
   margin-top: 1rem;
   padding-top: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-top: 1px solid rgba(255, 255, 255, 0.085);
 }
 
 .btn-secondary {
@@ -377,10 +279,6 @@ form {
     box-shadow: 0 6px 20px rgba(61, 153, 252, 0.4);
   }
 
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -402,9 +300,7 @@ form {
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 // ============================================
@@ -422,16 +318,6 @@ form {
     max-height: 95vh;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    animation: slideUpMobile 0.3s ease-out;
-  }
-
-  @keyframes slideUpMobile {
-    from {
-      transform: translateY(100%);
-    }
-    to {
-      transform: translateY(0);
-    }
   }
 
   .dialog-header {
@@ -444,27 +330,6 @@ form {
 
   .form-actions {
     flex-direction: column-reverse;
-
-    .btn-secondary,
-    .btn-primary {
-      width: 100%;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .dialog-header h2 {
-    font-size: 1.25rem;
-  }
-
-  .form-group {
-    gap: 0.375rem;
-
-    input,
-    select {
-      padding: 0.75rem;
-      font-size: 0.875rem;
-    }
   }
 }
 
@@ -472,13 +337,11 @@ form {
 // ACCESSIBILITY
 // ============================================
 
-/* Focus visible for keyboard navigation */
 *:focus-visible {
   outline: 2px solid #3d99fc;
   outline-offset: 2px;
 }
 
-/* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -4,7 +4,7 @@
     <div class="header-content">
       <div class="header-left">
         <h1>User Management</h1>
-        <p>Manage system users and their roles</p>
+        <p>Manage system users and their departments</p>
       </div>
       <div class="header-actions">
         @if (canEditUsers()) {
@@ -36,11 +36,11 @@
         </div>
       </div>
 
-      <!-- Role Filter -->
+      <!-- Department Filter -->
       <div class="filter-group">
-        <label>Role</label>
+        <label>Department</label>
         <select [formControl]="roleFilter">
-          <option value="">All Roles</option>
+          <option value="">All Departments</option>
           @for (role of roles; track role) {
             <option [value]="role">{{ role | titlecase }}</option>
           }
@@ -104,7 +104,7 @@
             <tr>
               <th>User</th>
               <th (click)="onSortChange('role')" class="sortable">
-                Role
+                Department
                 @if (sortBy === 'role') {
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" [class.rotate-180]="sortOrder === 'desc'">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -147,7 +147,7 @@
                 </td>
                 <td>
                   <span class="role-badge" [ngClass]="getRoleBadgeClass(user.role)">
-                    {{ user.role || 'No Role' }}
+                    {{ user.role || 'No Department' }}
                   </span>
                 </td>
                 <td>

@@ -11,6 +11,7 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { DepartmentService } from '../../../core/services/department.service';
 import { User, UserListParams } from '../../../core/models/user.model';
 import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.component';
 
@@ -24,6 +25,7 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
 export class UserListComponent implements OnInit, OnDestroy {
   private userService = inject(UserService);
   private authService = inject(AuthService);
+  private departmentService = inject(DepartmentService);
   private router = inject(Router);
   private viewContainerRef = inject(ViewContainerRef);
   private cdr = inject(ChangeDetectorRef);
@@ -50,7 +52,7 @@ export class UserListComponent implements OnInit, OnDestroy {
   statusFilter = new FormControl('');
 
   // Available filter options
-  roles = ['superadmin', 'admin', 'manager', 'developer', 'viewer'];
+  roles: string[] = [];
   statuses = [
     { value: '', label: 'All Status' },
     { value: 'true', label: 'Active' },
@@ -91,6 +93,7 @@ export class UserListComponent implements OnInit, OnDestroy {
 
     // Initial load
     this.loadUsers();
+    this.loadDepartments();
   }
 
   ngOnDestroy(): void {
@@ -139,6 +142,23 @@ export class UserListComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  /**
+   * Load departments for filter dropdown
+   */
+  loadDepartments(): void {
+    this.departmentService.getDepartments({ isActive: true })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (departments) => {
+          this.roles = departments.map(d => d.name);
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.roles = [];
+        },
+      });
   }
 
   /**
