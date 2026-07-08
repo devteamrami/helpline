@@ -162,10 +162,14 @@ export class TicketListComponent implements OnInit, OnDestroy {
   }
 
   // ── Inline status change ─────────────────────────────────────────────────────
+  updatingStatusTicketId: string | null = null;
 
   onInlineStatusChange(ticket: Ticket, event: Event): void {
     const select = event.target as HTMLSelectElement;
     const newStatus = select.value as TicketStatus;
+
+    this.updatingStatusTicketId = ticket.id;
+    this.cdr.detectChanges();
 
     this.ticketService.updateTicketStatus(ticket.id, newStatus)
       .pipe(takeUntil(this.destroy$))
@@ -173,11 +177,14 @@ export class TicketListComponent implements OnInit, OnDestroy {
         next: () => {
           // Update local state
           ticket.status = newStatus;
+          this.updatingStatusTicketId = null;
           this.cdr.detectChanges();
         },
         error: () => {
           // Revert on failure
           select.value = ticket.status;
+          this.updatingStatusTicketId = null;
+          this.cdr.detectChanges();
         },
       });
   }

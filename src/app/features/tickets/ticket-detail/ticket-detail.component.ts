@@ -8,7 +8,7 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -17,6 +17,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { TicketService } from '../services/ticket.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../core/services/user.service';
+import { ImageEditorComponent } from '../../../shared/components/image-editor/image-editor.component';
 import {
   TicketDetail,
   ConversationEntry,
@@ -44,8 +46,10 @@ const MAX_FILE_COUNT = 5;
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
+    ImageEditorComponent,
   ],
   templateUrl: './ticket-detail.component.html',
   styleUrls: ['./ticket-detail.component.scss'],
@@ -55,6 +59,7 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private ticketService = inject(TicketService);
   private authService = inject(AuthService);
+  private userService = inject(UserService);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
@@ -89,6 +94,18 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
     { value: 'resolved', label: 'Resolved' },
     { value: 'closed', label: 'Closed' },
   ];
+
+  // ── Assignees & Progress ────────────────────────────────────────────────────
+  allUsers: { id: string; username: string; firstName: string; lastName: string; email: string }[] = [];
+  showAssignDropdown = false;
+  progressValue = 0;
+  isUpdatingProgress = false;
+
+  // ── Internal Comments ───────────────────────────────────────────────────────
+  internalComments: any[] = [];
+  newInternalComment = '';
+  isLoadingComments = false;
+  isPostingComment = false;
 
   // ── Lifecycle ───────────────────────────────────────────────────────────────
 
@@ -133,8 +150,10 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
           this.conversations = [...(detail.conversations ?? [])];
           this.statusControl.setValue(detail.status);
           this.previousStatus = detail.status;
+          this.progressValue = detail.progress_percentage || 0;
           this.isLoading = false;
           this.cdr.detectChanges();
+          this.loadInternalComments();
         },
         error: (err) => {
           console.log('[TicketDetail] error fired:', err?.message);
@@ -250,12 +269,12 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
     return this.previewUrls.get(file)!;
   }
 
-  // ── Image Editor for Attachments ────────────────────────────────────────────
+  // ── Image Editor for Attachments (reusable <app-image-editor>) ──────────────
 
   showAttachmentEditor = false;
   isApplyingAttachmentEdit = false;
+  resolvedAttachmentSrc: string | null = null;
   private editingFileIndex = -1;
-  private attachmentTuiEditor: any = null;
 
   openImageEditorForFile(index: number, event: Event): void {
     event.stopPropagation();
@@ -263,70 +282,23 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
     if (!file || !file.type.startsWith('image/')) return;
 
     this.editingFileIndex = index;
+    this.resolvedAttachmentSrc = this.getPreviewUrl(file);
     this.showAttachmentEditor = true;
-
-    const src = this.getPreviewUrl(file);
-    setTimeout(() => this.initAttachmentEditor(src), 100);
+    this.cdr.detectChanges();
   }
 
-  private async initAttachmentEditor(imageSrc: string): Promise<void> {
-    const container = document.getElementById('attachment-editor-container');
-    if (!container) return;
-
-    const ImageEditor = (await import('tui-image-editor')).default;
-    this.destroyAttachmentEditor();
-
-    this.attachmentTuiEditor = new ImageEditor(container, {
-      includeUI: {
-        loadImage: { path: imageSrc, name: 'Attachment' },
-        theme: {
-          'common.bi.image': '',
-          'common.bisize.width': '0px',
-          'common.bisize.height': '0px',
-          'common.backgroundImage': 'none',
-          'common.backgroundColor': '#1e1e2e',
-          'common.border': '0px',
-          'header.backgroundImage': 'none',
-          'header.backgroundColor': '#3d99fc',
-          'header.border': '0px',
-          'loadButton.backgroundColor': '#3d99fc',
-          'loadButton.border': 'none',
-          'loadButton.color': '#fff',
-          'downloadButton.backgroundColor': '#003f83',
-          'downloadButton.border': 'none',
-          'downloadButton.color': '#fff',
-          'menu.normalIcon.color': '#eee',
-          'menu.activeIcon.color': '#fff',
-          'menu.disabledIcon.color': '#555',
-          'menu.hoverIcon.color': '#fff',
-          'submenu.normalIcon.color': '#eee',
-          'submenu.activeIcon.color': '#fff',
-        } as any,
-        menu: ['crop', 'flip', 'rotate', 'draw', 'shape', 'icon', 'text', 'mask', 'filter'],
-        initMenu: 'draw',
-        uiSize: { width: '100%', height: '540px' },
-        menuBarPosition: 'bottom',
-      },
-      cssMaxWidth: 900,
-      cssMaxHeight: 480,
-      usageStatistics: false,
-    });
-
-    document.body.removeAttribute('dir');
-    document.documentElement.setAttribute('dir', 'ltr');
-  }
-
-  applyAttachmentEdit(): void {
-    if (!this.attachmentTuiEditor || this.editingFileIndex < 0) {
+  /**
+   * Handler for the reusable editor's (apply) output.
+   * Converts the edited data URL back to a File and replaces it in selectedFiles.
+   */
+  onAttachmentEditApply(dataUrl: string): void {
+    if (!dataUrl || this.editingFileIndex < 0) {
       this.closeAttachmentEditor();
       return;
     }
 
     this.isApplyingAttachmentEdit = true;
 
-    const dataUrl = this.attachmentTuiEditor.toDataURL({ format: 'jpeg', quality: 0.85 });
-
-    // Convert data URL to File and replace in the selectedFiles array
     fetch(dataUrl)
       .then(r => r.blob())
       .then(blob => {
@@ -359,19 +331,156 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
   closeAttachmentEditor(): void {
     this.showAttachmentEditor = false;
     this.editingFileIndex = -1;
-    this.destroyAttachmentEditor();
-  }
-
-  private destroyAttachmentEditor(): void {
-    if (this.attachmentTuiEditor) {
-      try { this.attachmentTuiEditor.destroy(); } catch {}
-      this.attachmentTuiEditor = null;
-    }
+    this.resolvedAttachmentSrc = null;
+    this.isApplyingAttachmentEdit = false;
   }
 
   removeFile(index: number): void {
     this.selectedFiles = this.selectedFiles.filter((_, i) => i !== index);
     this.fileError = null;
+  }
+
+  // ── Assignees & Progress ────────────────────────────────────────────────────
+
+  loadAllUsers(): void {
+    this.userService.getUsers({ page: 1, limit: 100 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.allUsers = res.users.map((u: any) => ({
+            id: u.id,
+            username: u.username,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            email: u.email,
+          }));
+          this.cdr.detectChanges();
+        },
+        error: () => {},
+      });
+  }
+
+  getUnassignedUsers(): any[] {
+    if (!this.ticket?.assignees) return this.allUsers;
+    const assignedIds = new Set(this.ticket.assignees.map(a => a.userId));
+    return this.allUsers.filter(u => !assignedIds.has(u.id));
+  }
+
+  toggleAssignDropdown(): void {
+    this.showAssignDropdown = !this.showAssignDropdown;
+    if (this.showAssignDropdown && this.allUsers.length === 0) {
+      this.loadAllUsers();
+    }
+  }
+
+  assignUser(userId: string): void {
+    if (!this.ticket) return;
+    this.ticketService.assignUsers(this.ticket.id, [userId])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.showAssignDropdown = false;
+          this.loadTicket(this.ticket!.id);
+        },
+        error: () => {},
+      });
+  }
+
+  unassignUser(userId: string): void {
+    if (!this.ticket) return;
+    this.ticketService.unassignUser(this.ticket.id, userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => { this.loadTicket(this.ticket!.id); },
+        error: () => {},
+      });
+  }
+
+  onProgressChange(event: Event): void {
+    const value = parseInt((event.target as HTMLInputElement).value) || 0;
+    this.progressValue = value;
+  }
+
+  saveProgress(): void {
+    if (!this.ticket) return;
+    this.isUpdatingProgress = true;
+    this.ticketService.updateProgress(this.ticket.id, this.progressValue)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isUpdatingProgress = false;
+          if (this.ticket) this.ticket.progress_percentage = this.progressValue;
+          this.cdr.detectChanges();
+        },
+        error: () => { this.isUpdatingProgress = false; },
+      });
+  }
+
+  // ── Internal Comments ───────────────────────────────────────────────────────
+
+  loadInternalComments(): void {
+    if (!this.ticket) return;
+    this.isLoadingComments = true;
+    this.ticketService.getInternalComments(this.ticket.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (comments) => {
+          this.internalComments = comments;
+          this.isLoadingComments = false;
+          this.cdr.detectChanges();
+        },
+        error: () => { this.isLoadingComments = false; },
+      });
+  }
+
+  postInternalComment(): void {
+    if (!this.ticket || !this.newInternalComment.trim()) return;
+    this.isPostingComment = true;
+    this.ticketService.addInternalComment(this.ticket.id, this.newInternalComment.trim())
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (comment) => {
+          this.internalComments.push(comment);
+          this.newInternalComment = '';
+          this.isPostingComment = false;
+          this.cdr.detectChanges();
+        },
+        error: () => { this.isPostingComment = false; },
+      });
+  }
+
+  deleteInternalComment(commentId: string): void {
+    if (!this.ticket) return;
+    this.ticketService.deleteInternalComment(this.ticket.id, commentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.internalComments = this.internalComments.filter(c => c.id !== commentId);
+          this.cdr.detectChanges();
+        },
+        error: () => {},
+      });
+  }
+
+  getCommentUserName(comment: any): string {
+    if (comment.user?.firstName) return `${comment.user.firstName} ${comment.user.lastName || ''}`.trim();
+    return comment.user?.username || 'Staff';
+  }
+
+  getCurrentUserId(): string {
+    return this.authService.currentUserValue?.id || '';
+  }
+
+  formatCommentTime(dateStr: string): string {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return `${diffH}h ago`;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   // ── Reply submission ────────────────────────────────────────────────────────
@@ -428,6 +537,7 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
 
     this.isUpdatingStatus = true;
     this.statusError = null;
+    this.statusControl.disable({ emitEvent: false });
 
     this.ticketService
       .updateTicketStatus(this.ticket.id, newStatus)
@@ -440,12 +550,16 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
             this.ticket = { ...this.ticket, status: updated.status };
           }
           this.isUpdatingStatus = false;
+          this.statusControl.enable({ emitEvent: false });
+          this.cdr.detectChanges();
         },
         error: (err) => {
-          // Revert dropdown to previous value (Requirement 6.12)
+          // Revert dropdown to previous value
           this.statusControl.setValue(this.previousStatus, { emitEvent: false });
           this.statusError = err.message || 'Failed to update status. Please try again.';
           this.isUpdatingStatus = false;
+          this.statusControl.enable({ emitEvent: false });
+          this.cdr.detectChanges();
         },
       });
   }

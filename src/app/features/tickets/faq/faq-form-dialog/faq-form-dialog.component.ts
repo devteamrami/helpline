@@ -38,6 +38,7 @@ import { environment } from '../../../../../environments/environment';
 import { FaqService } from '../../services/faq.service';
 import { Faq } from '../../models/ticket.model';
 import { FaqUploadAdapterPlugin } from './faq-upload-adapter';
+import { ImageEditorComponent } from '../../../../shared/components/image-editor/image-editor.component';
 
 export interface FaqFormDialogData {
   mode: 'create' | 'edit';
@@ -47,7 +48,7 @@ export interface FaqFormDialogData {
 @Component({
   selector: 'app-faq-form-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CKEditorModule],
+  imports: [CommonModule, ReactiveFormsModule, CKEditorModule, ImageEditorComponent],
   templateUrl: './faq-form-dialog.component.html',
   styleUrls: ['./faq-form-dialog.component.scss'],
 })
@@ -70,11 +71,11 @@ export class FaqFormDialogComponent implements OnInit, OnDestroy, AfterViewInit 
   answerHtml = '';
   private editorInstance: any = null;
 
-  // tui-image-editor overlay
+  // Image editor overlay (uses reusable <app-image-editor>)
   showImageEditor = false;
   isApplyingEdit = false;   // shows loading overlay while uploading to Spaces
   applyEditError = '';
-  private tuiEditor: any = null;
+  resolvedImageSrc: string | null = null;  // src passed to the editor component
   private currentImgElement: HTMLImageElement | null = null;
 
   // Callbacks
@@ -151,7 +152,6 @@ export class FaqFormDialogComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   ngOnDestroy(): void {
-    this.destroyTuiEditor();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -184,18 +184,15 @@ export class FaqFormDialogComponent implements OnInit, OnDestroy, AfterViewInit 
     // Intentionally empty — we read data on submit to avoid cursor reset.
   }
 
-  // ── Image editing with tui-image-editor ────────────────────────────────────
-
-  // ── Image editing ──────────────────────────────────────────────────────────
-
-  // Map from img element → its S3 key (so we can overwrite the same key)
-  private imgKeyMap = new WeakMap<HTMLImageElement, string>();
+  // ── Image editing (reusable <app-image-editor>) ─────────────────────────────
 
   isLoadingImageForEditor = false;
 
   openImageEditor(imgEl: HTMLImageElement): void {
     this.currentImgElement = imgEl;
     this.isLoadingImageForEditor = true;
+    this.applyEditError = '';
+    this.resolvedImageSrc = null;
     this.showImageEditor = true;
 
     // Strip cache-busting param
@@ -203,14 +200,15 @@ export class FaqFormDialogComponent implements OnInit, OnDestroy, AfterViewInit 
 
     // If the image is already a data URL (just edited), use it directly — instant
     if (cleanSrc.startsWith('data:')) {
-      setTimeout(() => this.initTuiEditorWithSrc(cleanSrc), 50);
+      this.resolvedImageSrc = cleanSrc;
+      this.isLoadingImageForEditor = false;
     } else {
       // For remote Spaces images, fetch via proxy and convert to data URL
-      setTimeout(() => this.fetchAndInitEditor(cleanSrc), 50);
+      this.resolveRemoteImage(cleanSrc);
     }
   }
 
-  private async fetchAndInitEditor(imageSrc: string): Promise<void> {
+  private async resolveRemoteImage(imageSrc: string): Promise<void> {
     let loadSrc = imageSrc;
     if (imageSrc.includes('digitaloceanspaces.com')) {
       const proxyUrl = `${environment.apiUrl}/faqs/proxy-image?url=${encodeURIComponent(imageSrc)}`;
@@ -230,81 +228,31 @@ export class FaqFormDialogComponent implements OnInit, OnDestroy, AfterViewInit 
         loadSrc = `${environment.apiUrl}/faqs/proxy-image?url=${encodeURIComponent(imageSrc)}`;
       }
     }
-    this.initTuiEditorWithSrc(loadSrc);
-  }
-
-  private async initTuiEditorWithSrc(loadSrc: string): Promise<void> {
-    const container = document.getElementById('tui-editor-container');
-    if (!container) return;
-
-    const ImageEditor = (await import('tui-image-editor')).default;
-    this.destroyTuiEditor();
-
-    this.tuiEditor = new ImageEditor(container, {
-      includeUI: {
-        loadImage: { path: loadSrc, name: 'FAQ Image' },
-        theme: {
-          'common.bi.image': '',
-          'common.bisize.width': '0px',
-          'common.bisize.height': '0px',
-          'common.backgroundImage': 'none',
-          'common.backgroundColor': '#1e1e2e',
-          'common.border': '0px',
-          'header.backgroundImage': 'none',
-          'header.backgroundColor': '#3d99fc',
-          'header.border': '0px',
-          'loadButton.backgroundColor': '#3d99fc',
-          'loadButton.border': 'none',
-          'loadButton.color': '#fff',
-          'loadButton.fontFamily': 'inherit',
-          'loadButton.fontSize': '14px',
-          'downloadButton.backgroundColor': '#003f83',
-          'downloadButton.border': 'none',
-          'downloadButton.color': '#fff',
-          'downloadButton.fontFamily': 'inherit',
-          'downloadButton.fontSize': '14px',
-          'menu.normalIcon.color': '#eee',
-          'menu.activeIcon.color': '#fff',
-          'menu.disabledIcon.color': '#555',
-          'menu.hoverIcon.color': '#fff',
-          'submenu.normalIcon.color': '#eee',
-          'submenu.activeIcon.color': '#fff',
-        } as any,
-        menu: ['crop', 'flip', 'rotate', 'draw', 'shape', 'icon', 'text', 'mask', 'filter'],
-        initMenu: 'draw',
-        uiSize: { width: '100%', height: '540px' },
-        menuBarPosition: 'bottom',
-      },
-      cssMaxWidth: 900,
-      cssMaxHeight: 480,
-      usageStatistics: false,
-    });
-
+    this.resolvedImageSrc = loadSrc;
     this.isLoadingImageForEditor = false;
-    document.body.removeAttribute('dir');
-    document.documentElement.setAttribute('dir', 'ltr');
   }
 
-  applyImageEdit(): void {
-    if (!this.tuiEditor || !this.currentImgElement) {
+  /**
+   * Handler for the reusable editor's (apply) output.
+   * Receives the edited image as a data URL, uploads it to Spaces,
+   * updates the CKEditor model + DOM img, then closes.
+   */
+  onImageEditorApply(dataUrl: string): void {
+    if (!dataUrl || !this.currentImgElement) {
       this.closeImageEditor();
       return;
     }
 
     const imgEl = this.currentImgElement;
-
-    const dataUrl = this.tuiEditor.toDataURL({ format: 'jpeg', quality: 0.85 });
     const token = this.getAuthToken();
 
     // INSTANT: show the edited image immediately as data URL in the editor
     imgEl.src = dataUrl;
 
-    // Show loading state
     this.isApplyingEdit = true;
     this.applyEditError = '';
 
     // Always upload as a NEW file (fresh UUID key) — bypasses CDN caching entirely.
-    // The old image file remains in Spaces (negligible cost) but is no longer referenced.
     fetch(dataUrl)
       .then(r => r.blob())
       .then(blob => {
@@ -313,7 +261,6 @@ export class FaqFormDialogComponent implements OnInit, OnDestroy, AfterViewInit 
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        // POST = always creates new key (no CDN stale cache problem)
         return fetch(`${environment.apiUrl}/faqs/upload-image`, {
           method: 'POST',
           headers,
@@ -357,15 +304,10 @@ export class FaqFormDialogComponent implements OnInit, OnDestroy, AfterViewInit 
 
   closeImageEditor(): void {
     this.showImageEditor = false;
-    this.destroyTuiEditor();
+    this.resolvedImageSrc = null;
     this.currentImgElement = null;
-  }
-
-  private destroyTuiEditor(): void {
-    if (this.tuiEditor) {
-      try { this.tuiEditor.destroy(); } catch {}
-      this.tuiEditor = null;
-    }
+    this.applyEditError = '';
+    this.isApplyingEdit = false;
   }
 
   // ── Form submit ────────────────────────────────────────────────────────────

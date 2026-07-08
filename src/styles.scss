@@ -11,6 +11,21 @@
 .cdk-overlay-pane { z-index: 9999 !important; }
 .mat-mdc-select-panel { max-height: 400px !important; background: $dropdown-bg !important; color: $text-primary !important; }
 
+/* mat-select trigger content — force white text in dark theme */
+.mat-mdc-select-value,
+.mat-mdc-select-value-text,
+.mat-mdc-select-min-line,
+.mat-mdc-select-trigger span {
+  color: #ffffff !important;
+}
+
+/* mat-select arrow — force visible */
+.mat-mdc-select-arrow,
+.mat-mdc-select-arrow svg {
+  color: #a0aec0 !important;
+  fill: #a0aec0 !important;
+}
+
 /* Reset */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; margin: 0; padding: 0; }

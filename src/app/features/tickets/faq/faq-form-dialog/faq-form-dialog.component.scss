@@ -253,82 +253,31 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── tui-image-editor overlay ────────────────────────────────────────────────── */
+/* ── Image editor preload overlay (shown while resolving remote image) ───────── */
 
-.image-editor-overlay {
+.ie-preload-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  animation: fadeIn 0.2s ease;
-}
-
-.image-editor-panel {
-  background: #1e1e2e;
-  border-radius: 16px;
-  overflow: hidden;
-  width: 100%;
-  max-width: 980px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+  z-index: 3000;
+  background: rgba(10, 12, 15, 0.92);
+  backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
-}
-
-.image-editor-header {
-  background: #3d99fc;
-  padding: 1rem 1.5rem;
-
-  h3 { color: white; margin: 0 0 0.25rem; font-size: 1.2rem; font-weight: 700; }
-  p  { color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.85rem; }
-}
-
-.tui-editor-mount {
-  width: 100%;
-  height: 560px;
-  overflow: hidden;
-}
-
-.image-editor-loading {
-  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  padding: 1.25rem;
-  background: #1a1a2e;
-  color: rgba(255,255,255,0.8);
-  font-size: 0.9rem;
+  gap: 16px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
-.editor-spinner {
-  width: 22px;
-  height: 22px;
-  border: 3px solid rgba(255,255,255,0.2);
+.ie-preload-spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid rgba(61, 153, 252, 0.2);
   border-top-color: #3d99fc;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-}
-
-.image-editor-actions {
-  background: #2a2a3e;
-  padding: 1rem 1.5rem;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.apply-edit-error {
-  background: #c53030;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: center;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────────── */
@@ -357,8 +306,6 @@
     min-height: 220px;   // Slightly shorter on mobile to leave room for keyboard
     max-height: 40vh;
   }
-
-  .tui-editor-mount { height: 400px; }
 }
 
 @media (min-width: 769px) and (max-width: 1100px) {

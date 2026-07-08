@@ -4,6 +4,75 @@
   gap: 32px;
 }
 
+// ─── Material form field dark theme overrides (scoped to comments) ───────────
+::ng-deep .task-comments {
+  // Label text
+  .mat-mdc-form-field .mdc-floating-label,
+  .mat-mdc-form-field .mdc-floating-label--float-above,
+  .mat-mdc-floating-label {
+    color: #a0aec0 !important;
+  }
+
+  // Input / textarea / select text
+  .mat-mdc-form-field input.mat-mdc-input-element,
+  .mat-mdc-form-field textarea.mat-mdc-input-element,
+  .mat-mdc-select-value-text,
+  .mat-mdc-select-value {
+    color: #ffffff !important;
+  }
+
+  // Select arrow
+  .mat-mdc-select-arrow {
+    color: #a0aec0 !important;
+  }
+
+  // Field fill background
+  .mat-mdc-text-field-wrapper,
+  .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+    background: rgba(26, 29, 33, 0.6) !important;
+    border-radius: 8px;
+  }
+
+  // Outline / underline color
+  .mdc-line-ripple::before {
+    border-bottom-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  // Character counter / hints
+  .mat-mdc-form-field-hint,
+  .mat-mdc-form-field-bottom-align,
+  .mat-mdc-form-field-subscript-wrapper {
+    color: #999999 !important;
+  }
+
+  // Placeholder
+  textarea::placeholder,
+  input::placeholder {
+    color: #777777 !important;
+  }
+
+  // Post Comment button — disabled state visibility
+  .form-actions button.mat-mdc-raised-button[disabled],
+  .form-actions button.mat-mdc-unelevated-button[disabled],
+  .form-actions button[disabled] {
+    background: rgba(61, 153, 252, 0.25) !important;
+    color: rgba(255, 255, 255, 0.65) !important;
+    border: 1px solid rgba(61, 153, 252, 0.4) !important;
+    opacity: 1 !important;
+
+    mat-icon {
+      color: rgba(255, 255, 255, 0.65) !important;
+    }
+  }
+
+  // Post Comment button — enabled state
+  .form-actions button.mat-mdc-raised-button:not([disabled]),
+  .form-actions button.mat-mdc-unelevated-button:not([disabled]) {
+    background: #3d99fc !important;
+    color: #ffffff !important;
+  }
+}
+
 .section-title {
   display: flex;
   align-items: center;
@@ -329,5 +398,35 @@
         }
       }
     }
+  }
+}
+
+// ─── Comment type dropdown panel styles (CDK overlay) ────────────────────────
+::ng-deep .mat-mdc-select-panel {
+  // Option label text
+  .mdc-list-item__primary-text {
+    color: #ffffff !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  // Option icons — inherit color from [style.color] binding
+  .mat-mdc-option mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+
+  // Hover state
+  .mat-mdc-option:hover:not(.mat-mdc-option-disabled) {
+    background: rgba(61, 153, 252, 0.1) !important;
+  }
+
+  // Selected state
+  .mat-mdc-option.mdc-list-item--selected:not(.mat-mdc-option-multiple) {
+    background: rgba(61, 153, 252, 0.15) !important;
   }
 }
