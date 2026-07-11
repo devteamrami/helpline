@@ -275,64 +275,185 @@
 }
 
 // ============================================
-// NOTIFICATION BELL (fixed, visible on all pages)
+// APP NAVBAR (same design as dashboard header, on all pages)
 // ============================================
 
-.notification-bell {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+.app-navbar {
+  background: rgba(42, 46, 51, 0.65);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.navbar-logo-text {
+  h1 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.2;
+  }
+  span {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.75rem;
+    color: #999999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.navbar-bell {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   border: none;
-  background: rgba(42, 46, 51, 0.9);
+  background: rgba(42, 46, 51, 0.65);
   color: #cccccc;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  z-index: 950;
   transition: all 0.2s;
 
   &:hover {
-    background: #3d99fc;
-    color: white;
+    background: rgba(61, 153, 252, 0.15);
+    color: #3d99fc;
     transform: scale(1.05);
   }
 
   &.jiggle {
-    animation: bellJiggle 0.6s ease-in-out 3;
+    animation: navBellJiggle 0.8s ease-in-out infinite;
+    color: #3d99fc;
+
+    .navbar-badge {
+      animation: navBadgePulse 1s ease-in-out infinite;
+    }
   }
 }
 
-.notification-badge {
+.navbar-badge {
   position: absolute;
   top: -4px;
   right: -4px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
   background: #f03d4f;
   color: white;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(240, 61, 79, 0.4);
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 12px;
+  background: rgba(42, 46, 51, 0.65);
+}
+
+.navbar-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #3d99fc;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
+  font-weight: 700;
+  font-size: 1rem;
 }
 
-@keyframes bellJiggle {
-  0% { transform: rotate(0deg); }
-  15% { transform: rotate(15deg); }
-  30% { transform: rotate(-15deg); }
-  45% { transform: rotate(10deg); }
-  60% { transform: rotate(-10deg); }
-  75% { transform: rotate(5deg); }
-  100% { transform: rotate(0deg); }
+.navbar-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navbar-name {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.875rem;
+}
+
+.navbar-role {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  text-transform: capitalize;
+  width: fit-content;
+  &.role-superadmin { background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); color: white; }
+  &.role-admin { background: #3d99fc; color: white; }
+  &.role-manager { background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; }
+  &.role-developer { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; }
+  &.role-viewer { background: rgba(42, 46, 51, 0.75); color: #cccccc; }
+}
+
+.navbar-logout {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #999999;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  &:hover { background: rgba(240, 61, 79, 0.1); color: #e53e3e; }
+}
+
+@keyframes navBellJiggle {
+  0%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-14deg); }
+  30% { transform: rotate(10deg); }
+  40% { transform: rotate(-10deg); }
+  50% { transform: rotate(6deg); }
+  60% { transform: rotate(-6deg); }
+  70% { transform: rotate(2deg); }
+  80% { transform: rotate(-2deg); }
+}
+
+@keyframes navBadgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@media (max-width: 768px) {
+  .navbar-content { padding: 0.6rem 1rem; }
+  .navbar-user-info { display: none; }
 }
 
 @media (max-width: 1024px) {

@@ -6,7 +6,7 @@
 /**
  * Task status type
  */
-export type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Done' | 'Blocked';
+export type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Done' | 'Archived';
 
 /**
  * Task priority type

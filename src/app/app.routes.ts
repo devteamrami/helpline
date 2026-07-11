@@ -66,7 +66,7 @@ export const routes: Routes = [
       },
       {
         path: 'tickets',
-        canActivate: [authGuard, roleGuard(['admin', 'superadmin', 'manager'])],
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/tickets/ticket-list/ticket-list.component').then(
             (m) => m.TicketListComponent
@@ -74,7 +74,7 @@ export const routes: Routes = [
       },
       {
         path: 'tickets/:id',
-        canActivate: [authGuard, roleGuard(['admin', 'superadmin', 'manager'])],
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/tickets/ticket-detail/ticket-detail.component').then(
             (m) => m.TicketDetailComponent
@@ -93,6 +93,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/activities/activities.component').then(
             (m) => m.ActivitiesComponent
+          ),
+      },
+      {
+        path: 'team/departments',
+        loadComponent: () =>
+          import('./features/departments/department-list/department-list.component').then(
+            (m) => m.DepartmentListComponent
           ),
       },
       {

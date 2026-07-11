@@ -3,12 +3,12 @@
  * Full page showing all activities with pagination.
  */
 
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, inject, ChangeDetectorRef, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ActivityService } from './activity.service';
-import { Activity, ActivityPagination } from './activity.model';
+import { Activity, ActivityPagination, ActivityType } from './activity.model';
 
 @Component({
   selector: 'app-activities',
@@ -17,9 +17,10 @@ import { Activity, ActivityPagination } from './activity.model';
   templateUrl: './activities.component.html',
   styleUrls: ['./activities.component.scss'],
 })
-export class ActivitiesComponent implements OnInit, OnDestroy {
+export class ActivitiesComponent implements OnDestroy {
   private activityService = inject(ActivityService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
   activities: Activity[] = [];
@@ -31,8 +32,10 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
   };
   loading = false;
 
-  ngOnInit(): void {
-    this.loadActivities(1);
+  constructor() {
+    afterNextRender(() => {
+      this.loadActivities(1);
+    });
   }
 
   ngOnDestroy(): void {
@@ -42,6 +45,9 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
 
   loadActivities(page: number): void {
     this.loading = true;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+
     this.activityService
       .getActivities(page, 20)
       .pipe(takeUntil(this.destroy$))
@@ -50,27 +56,61 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
           this.activities = res.activities;
           this.pagination = res.pagination;
           this.loading = false;
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         },
         error: () => {
           this.loading = false;
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         },
       });
   }
 
   dismissActivity(id: string): void {
-    if (confirm('Are you sure you want to dismiss this activity?')) {
-      this.activityService
-        .dismissActivity(id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
-          this.activities = this.activities.filter((a) => a.id !== id);
-          this.pagination.totalItems--;
-        });
+    this.activityService
+      .dismissActivity(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.activities = this.activities.filter((a) => a.id !== id);
+        this.pagination.totalItems--;
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      });
+  }
+
+  navigateToResource(activity: Activity): void {
+    switch (activity.resourceType) {
+      case 'ticket':
+        if (activity.resourceId) this.router.navigate(['/tickets', activity.resourceId]);
+        break;
+      case 'project':
+        if (activity.resourceId) this.router.navigate(['/projects', activity.resourceId]);
+        break;
+      case 'task':
+        if (activity.projectId && activity.resourceId) {
+          this.router.navigate(['/projects', activity.projectId, 'tasks', activity.resourceId]);
+        }
+        break;
     }
   }
 
-  goToTicket(ticketId: string): void {
-    this.router.navigate(['/tickets', ticketId]);
+  getActivityIcon(type: ActivityType): string {
+    const icons: Record<ActivityType, string> = {
+      ticket_created: '🎫',
+      ticket_reply: '💬',
+      project_created: '📁',
+      project_updated: '✏️',
+      project_archived: '📦',
+      task_created: '✅',
+      task_updated: '🔄',
+      task_deleted: '🗑️',
+      task_commented: '💬',
+      task_started: '▶️',
+      task_paused: '⏸️',
+      task_completed: '🎉',
+    };
+    return icons[type] || '📋';
   }
 
   goToPage(page: number): void {
@@ -88,16 +128,16 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
     const diffDays = Math.floor(diffMs / 86400000);
 
     if (diffMinutes < 1) return 'just now';
-    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
   }
 
   formatDate(dateStr: string): string {
     const date = new Date(dateStr);
     const day = date.getDate();
     const suffix = this.getDaySuffix(day);
-    const month = date.toLocaleString('en-US', { month: 'long' });
+    const month = date.toLocaleString('en-US', { month: 'short' });
     const year = date.getFullYear();
     return `${day}${suffix} ${month} ${year}`;
   }

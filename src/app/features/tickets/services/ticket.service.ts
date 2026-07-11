@@ -70,6 +70,8 @@ interface RawConversationEntry {
 
 interface RawTicketDetail extends RawTicket {
   conversations: RawConversationEntry[];
+  assignees?: any[];
+  progress_percentage?: number;
 }
 
 interface RawTicketListResponse {
@@ -125,6 +127,16 @@ function mapTicketDetail(raw: RawTicketDetail): TicketDetail {
   return {
     ...mapTicket(raw),
     conversations: (raw.conversations ?? []).map(mapConversationEntry),
+    assignees: (raw.assignees ?? []).map((a: any) => ({
+      id: a.id,
+      userId: a.userId || a.user_id,
+      assignedAt: a.assignedAt || a.assigned_at,
+      email: a.email,
+      username: a.username,
+      firstName: a.firstName || a.first_name,
+      lastName: a.lastName || a.last_name,
+    })),
+    progress_percentage: raw.progress_percentage ?? 0,
   };
 }
 
@@ -320,5 +332,35 @@ export class TicketService {
       return error.message;
     }
     return 'An unexpected error occurred';
+  }
+
+  // ── Ticket Assignees & Progress ─────────────────────────────────────────────
+
+  assignUsers(ticketId: string, userIds: string[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${ticketId}/assignees`, { userIds });
+  }
+
+  unassignUser(ticketId: string, userId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${ticketId}/assignees/${userId}`);
+  }
+
+  updateProgress(ticketId: string, percentage: number): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/${ticketId}/progress`, { percentage });
+  }
+
+  getInternalComments(ticketId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${ticketId}/internal-comments`).pipe(
+      map(res => res.data?.comments || [])
+    );
+  }
+
+  addInternalComment(ticketId: string, comment: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${ticketId}/internal-comments`, { comment }).pipe(
+      map(res => res.data?.comment)
+    );
+  }
+
+  deleteInternalComment(ticketId: string, commentId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${ticketId}/internal-comments/${commentId}`);
   }
 }

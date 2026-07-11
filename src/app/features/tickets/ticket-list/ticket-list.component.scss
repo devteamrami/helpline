@@ -370,3 +370,24 @@
   &:focus { outline: 2px solid #3d99fc; outline-offset: 2px; }
   &:hover { opacity: 0.85; }
 }
+
+// ─── Status cell with inline spinner ─────────────────────────────────────────
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(61, 153, 252, 0.2);
+  border-top-color: #3d99fc;
+  border-radius: 50%;
+  animation: status-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes status-spin {
+  to { transform: rotate(360deg); }
+}

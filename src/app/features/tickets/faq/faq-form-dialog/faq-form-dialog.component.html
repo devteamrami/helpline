@@ -75,37 +75,22 @@
   </div>
 </div>
 
-<!-- tui-image-editor overlay -->
+<!-- Image editor (reusable, fullscreen) -->
 @if (showImageEditor) {
-  <div class="image-editor-overlay">
-    <div class="image-editor-panel">
-      <div class="image-editor-header">
-        <h3>Edit Image</h3>
-        <p>Use the tools below to crop, draw, add text, shapes, and apply filters.</p>
-      </div>
-      @if (isLoadingImageForEditor) {
-        <div class="image-editor-loading">
-          <div class="editor-spinner"></div>
-          <span>Loading image editor...</span>
-        </div>
-      }
-      <div id="tui-editor-container" class="tui-editor-mount"></div>
-      <div class="image-editor-actions">
-        <button class="btn btn-secondary" type="button" (click)="closeImageEditor()" [disabled]="isApplyingEdit">
-          Discard Changes
-        </button>
-        <button class="btn btn-primary" type="button" (click)="applyImageEdit()" [disabled]="isApplyingEdit">
-          @if (isApplyingEdit) {
-            <span class="spinner-small"></span>
-            Saving edited image...
-          } @else {
-            ✅ Apply & Insert
-          }
-        </button>
-      </div>
-      @if (applyEditError) {
-        <div class="apply-edit-error">⚠️ {{ applyEditError }}</div>
-      }
+  @if (isLoadingImageForEditor) {
+    <div class="ie-preload-overlay">
+      <div class="ie-preload-spinner"></div>
+      <span>Loading image…</span>
     </div>
-  </div>
+  } @else if (resolvedImageSrc) {
+    <app-image-editor
+      [imageSrc]="resolvedImageSrc"
+      [saving]="isApplyingEdit"
+      [errorMessage]="applyEditError"
+      title="Edit Image"
+      subtitle="Crop, draw, add text, shapes and apply filters."
+      (apply)="onImageEditorApply($event)"
+      (cancel)="closeImageEditor()">
+    </app-image-editor>
+  }
 }

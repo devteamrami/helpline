@@ -37,8 +37,20 @@ export interface ConversationEntry {
   createdAt: string;
 }
 
+export interface TicketAssignee {
+  id: string;
+  userId: string;
+  assignedAt: string;
+  email: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface TicketDetail extends Ticket {
   conversations: ConversationEntry[];
+  assignees?: TicketAssignee[];
+  progress_percentage?: number;
 }
 
 export interface TicketListParams {

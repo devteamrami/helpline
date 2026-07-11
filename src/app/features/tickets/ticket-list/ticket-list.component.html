@@ -77,16 +77,20 @@
           <td>{{ ticket.userFirstName }} {{ ticket.userLastName }}</td>
           <td>{{ ticket.siteName }}</td>
           <td (click)="$event.stopPropagation()">
-            <select
-              class="inline-status-select"
-              [ngClass]="getStatusClass(ticket.status)"
-              [value]="ticket.status"
-              (change)="onInlineStatusChange(ticket, $event)">
-              <option value="open">Open</option>
-              <option value="in_progress">In Progress</option>
-              <option value="resolved">Resolved</option>
-              <option value="closed">Closed</option>
-            </select>
+            <div class="status-cell">
+              <select
+                class="inline-status-select"
+                [ngClass]="getStatusClass(ticket.status)"
+                [value]="ticket.status"
+                [disabled]="updatingStatusTicketId === ticket.id"
+                (change)="onInlineStatusChange(ticket, $event)">
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+              </select>
+              <span *ngIf="updatingStatusTicketId === ticket.id" class="status-spinner"></span>
+            </div>
           </td>
           <td>{{ ticket.createdAt | date: 'MMM d, y' }}</td>
           <td>{{ ticket.lastRepliedAt ? (ticket.lastRepliedAt | date: 'MMM d, y') : '—' }}</td>

@@ -3,77 +3,85 @@
     <!-- Header -->
     <div class="activities-header">
       <h2>All Activities</h2>
-      <p class="activities-subtitle">Track all ticket-related activity across the system</p>
+      <p class="activities-subtitle">Track all activity across projects, tasks, and tickets</p>
     </div>
 
     <!-- Loading State -->
-    <div class="activities-loading" *ngIf="loading">
-      <p>Loading activities...</p>
-    </div>
+    @if (loading) {
+      <div class="activities-loading">
+        <div class="spinner"></div>
+        <p>Loading activities...</p>
+      </div>
+    }
 
     <!-- Activity List -->
-    <div class="activities-list" *ngIf="!loading">
-      <div
-        class="activity-card"
-        *ngFor="let activity of activities"
-        (click)="goToTicket(activity.ticketId)"
-      >
-        <div class="activity-card-icon">
-          <span *ngIf="activity.type === 'ticket_created'">🎫</span>
-          <span *ngIf="activity.type === 'ticket_reply'">💬</span>
-        </div>
-        <div class="activity-card-content">
-          <p class="activity-card-text">
-            <strong>{{ activity.actorName }}</strong>
-            <span *ngIf="activity.type === 'ticket_created'"> created ticket </span>
-            <span *ngIf="activity.type === 'ticket_reply'"> replied on ticket </span>
-            <span class="activity-card-target">{{ activity.message }}</span>
-          </p>
-          <span class="activity-card-time">{{ formatDate(activity.createdAt) }}, {{ getRelativeTime(activity.createdAt) }}</span>
-        </div>
-        <button
-          class="activity-card-dismiss"
-          (click)="dismissActivity(activity.id); $event.stopPropagation()"
-          title="Dismiss"
-        >
-          🗑️
-        </button>
-      </div>
+    @if (!loading) {
+      <div class="activities-list">
+        @for (activity of activities; track activity.id) {
+          <div
+            class="activity-card"
+            (click)="navigateToResource(activity)"
+          >
+            <div class="activity-card-icon">
+              <span>{{ getActivityIcon(activity.type) }}</span>
+            </div>
+            <div class="activity-card-content">
+              <p class="activity-card-text">
+                <strong>{{ activity.actorName }}</strong>
+                <span class="activity-card-message">{{ activity.message }}</span>
+              </p>
+              <span class="activity-card-time">{{ formatDate(activity.createdAt) }}, {{ getRelativeTime(activity.createdAt) }}</span>
+            </div>
+            <button
+              class="activity-card-dismiss"
+              (click)="dismissActivity(activity.id); $event.stopPropagation()"
+              title="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        }
 
-      <!-- Empty State -->
-      <div class="activities-empty" *ngIf="activities.length === 0">
-        <p>No activities to display</p>
+        <!-- Empty State -->
+        @if (activities.length === 0) {
+          <div class="activities-empty">
+            <p>No activities to display</p>
+          </div>
+        }
       </div>
-    </div>
+    }
 
     <!-- Pagination -->
-    <div class="activities-pagination" *ngIf="pagination.totalPages > 1">
-      <button
-        class="pagination-btn"
-        [disabled]="pagination.currentPage <= 1"
-        (click)="goToPage(pagination.currentPage - 1)"
-      >
-        ← Previous
-      </button>
-
-      <div class="pagination-pages">
+    @if (pagination.totalPages > 1) {
+      <div class="activities-pagination">
         <button
-          *ngFor="let page of getPages()"
-          class="pagination-page"
-          [class.active]="page === pagination.currentPage"
-          (click)="goToPage(page)"
+          class="pagination-btn"
+          [disabled]="pagination.currentPage <= 1"
+          (click)="goToPage(pagination.currentPage - 1)"
         >
-          {{ page }}
+          ← Previous
+        </button>
+
+        <div class="pagination-pages">
+          @for (page of getPages(); track page) {
+            <button
+              class="pagination-page"
+              [class.active]="page === pagination.currentPage"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          }
+        </div>
+
+        <button
+          class="pagination-btn"
+          [disabled]="pagination.currentPage >= pagination.totalPages"
+          (click)="goToPage(pagination.currentPage + 1)"
+        >
+          Next →
         </button>
       </div>
-
-      <button
-        class="pagination-btn"
-        [disabled]="pagination.currentPage >= pagination.totalPages"
-        (click)="goToPage(pagination.currentPage + 1)"
-      >
-        Next →
-      </button>
-    </div>
+    }
   </div>
 </div>

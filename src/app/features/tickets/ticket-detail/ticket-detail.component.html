@@ -37,14 +37,16 @@
           <div class="header-right">
             <div class="status-control">
               <label for="status-dropdown">Status</label>
-              <select
-                id="status-dropdown"
-                [formControl]="statusControl"
-                (change)="onStatusChange(statusControl.value!)"
-                class="status-select"
-                [disabled]="isUpdatingStatus">
-                <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
-              </select>
+              <div class="status-cell">
+                <select
+                  id="status-dropdown"
+                  [formControl]="statusControl"
+                  (change)="onStatusChange(statusControl.value!)"
+                  class="status-select">
+                  <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+                </select>
+                <span *ngIf="isUpdatingStatus" class="status-spinner-detail"></span>
+              </div>
             </div>
             <div *ngIf="statusError" class="status-error">{{ statusError }}</div>
           </div>
@@ -55,6 +57,106 @@
         <a *ngIf="ticket.pageUrl" [href]="ticket.pageUrl" target="_blank" class="page-url-link">
           🔗 {{ ticket.pageUrl | slice:0:80 }}{{ ticket.pageUrl.length > 80 ? '...' : '' }}
         </a>
+      </div>
+    </div>
+
+    <!-- Assignees & Progress Section -->
+    <div class="assignees-section">
+      <div class="assignees-progress-row">
+        <!-- Assignees -->
+        <div class="assignees-block">
+          <h3 class="section-title-sm">👥 Assigned Team</h3>
+          <div class="assignees-list">
+            <div *ngFor="let assignee of ticket.assignees" class="assignee-chip">
+              <span class="assignee-avatar-sm">{{ (assignee.firstName || assignee.username || 'U').charAt(0).toUpperCase() }}</span>
+              <span class="assignee-name-sm">{{ assignee.firstName ? (assignee.firstName + ' ' + (assignee.lastName || '')) : assignee.username }}</span>
+              <button class="assignee-remove" (click)="unassignUser(assignee.userId)" title="Remove">×</button>
+            </div>
+            <div *ngIf="!ticket.assignees || ticket.assignees.length === 0" class="no-assignees">No one assigned yet</div>
+          </div>
+          <!-- Add Assignee -->
+          <div class="assign-dropdown-wrap">
+            <button class="btn-assign" (click)="toggleAssignDropdown()">+ Assign</button>
+            <div *ngIf="showAssignDropdown" class="assign-dropdown">
+              <div *ngFor="let user of getUnassignedUsers()" class="assign-option" (click)="assignUser(user.id)">
+                <span class="assign-option-avatar">{{ (user.firstName || user.username || 'U').charAt(0).toUpperCase() }}</span>
+                <span>{{ user.firstName ? (user.firstName + ' ' + (user.lastName || '')) : user.username }}</span>
+              </div>
+              <div *ngIf="getUnassignedUsers().length === 0" class="assign-option empty">All users assigned</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-block">
+          <h3 class="section-title-sm">📊 Progress</h3>
+          <div class="progress-control">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              [value]="progressValue"
+              (input)="onProgressChange($event)"
+              class="progress-slider" />
+            <span class="progress-value">{{ progressValue }}%</span>
+            <button class="btn-save-progress" (click)="saveProgress()" [disabled]="isUpdatingProgress">
+              {{ isUpdatingProgress ? '...' : '💾' }}
+            </button>
+          </div>
+          <div class="progress-bar-visual">
+            <div class="progress-fill" [style.width.%]="progressValue"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Internal Staff Comments (not visible to external users) -->
+    <div class="internal-comments-section">
+      <h2 class="section-title">🔒 Internal Notes <span class="count">({{ internalComments.length }})</span></h2>
+      <p class="section-hint">Staff-only discussion. Not visible to the ticket requester.</p>
+
+      <!-- Comment Input -->
+      <div class="internal-comment-input">
+        <textarea
+          [(ngModel)]="newInternalComment"
+          placeholder="Add an internal note..."
+          rows="2"
+          class="internal-textarea"
+          (keydown.ctrl.enter)="postInternalComment()"
+          [disabled]="isPostingComment"></textarea>
+        <div class="internal-input-actions">
+          <span class="hint-sm">Ctrl+Enter to post</span>
+          <button
+            class="btn-post-comment"
+            (click)="postInternalComment()"
+            [disabled]="isPostingComment || !newInternalComment.trim()">
+            {{ isPostingComment ? 'Posting...' : '💬 Post Note' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Comment List -->
+      <div *ngIf="isLoadingComments" class="loading-sm">Loading notes...</div>
+      <div class="internal-comments-list">
+        <div *ngFor="let comment of internalComments" class="internal-comment-card">
+          <div class="ic-avatar">{{ getCommentUserName(comment).charAt(0).toUpperCase() }}</div>
+          <div class="ic-body">
+            <div class="ic-header">
+              <span class="ic-name">{{ getCommentUserName(comment) }}</span>
+              <span class="ic-time">{{ formatCommentTime(comment.createdAt || comment.created_at) }}</span>
+              <button
+                *ngIf="comment.userId === getCurrentUserId() || comment.user_id === getCurrentUserId()"
+                class="ic-delete"
+                (click)="deleteInternalComment(comment.id)"
+                title="Delete">×</button>
+            </div>
+            <p class="ic-text">{{ comment.comment }}</p>
+          </div>
+        </div>
+        <div *ngIf="!isLoadingComments && internalComments.length === 0" class="ic-empty">
+          No internal notes yet. Add one above.
+        </div>
       </div>
     </div>
 
@@ -148,22 +250,17 @@
           </div>
         </div>
 
-        <!-- Image Editor Overlay -->
-        <div *ngIf="showAttachmentEditor" class="image-editor-overlay">
-          <div class="image-editor-panel">
-            <div class="image-editor-header">
-              <h3>✏️ Edit Image</h3>
-              <p>Crop, draw, add text, shapes, and filters</p>
-            </div>
-            <div id="attachment-editor-container" class="attachment-editor-mount"></div>
-            <div class="image-editor-actions">
-              <button class="btn btn-secondary" (click)="closeAttachmentEditor()">Discard</button>
-              <button class="btn btn-primary" (click)="applyAttachmentEdit()" [disabled]="isApplyingAttachmentEdit">
-                {{ isApplyingAttachmentEdit ? '⏳ Applying...' : '✅ Apply Changes' }}
-              </button>
-            </div>
-          </div>
-        </div>
+        <!-- Image Editor Overlay (reusable, fullscreen) -->
+        @if (showAttachmentEditor && resolvedAttachmentSrc) {
+          <app-image-editor
+            [imageSrc]="resolvedAttachmentSrc"
+            [saving]="isApplyingAttachmentEdit"
+            title="Edit Image"
+            subtitle="Crop, draw, add text, shapes and apply filters."
+            (apply)="onAttachmentEditApply($event)"
+            (cancel)="closeAttachmentEditor()">
+          </app-image-editor>
+        }
 
         <div class="reply-actions">
           <button

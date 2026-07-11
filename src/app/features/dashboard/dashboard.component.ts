@@ -3,7 +3,7 @@
  * Main dashboard with modern, reactive design
  */
 
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -12,6 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { DashboardService, DashboardStats } from './dashboard.service';
 import { ActivityService } from '../activities/activity.service';
 import { Activity } from '../activities/activity.model';
+import { NotificationService } from '../../core/services/notification.service';
 
 interface StatCard {
   title: string;
@@ -42,13 +43,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private dashboardService = inject(DashboardService);
   private activityService = inject(ActivityService);
+  private notificationService = inject(NotificationService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
   currentUser: User | null = null;
   currentTime: Date = new Date();
   greeting: string = '';
   dashboardStats: DashboardStats | null = null;
+  unseenCount = 0;
+  bellJiggle = false;
+  todoTickets: any[] = [];
 
   stats: StatCard[] = [
     {
@@ -122,6 +128,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   ];
 
+  constructor() {
+    // Load data AFTER hydration is complete (client-side only)
+    afterNextRender(() => {
+      this.loadDashboardData();
+    });
+  }
+
   ngOnInit(): void {
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
@@ -130,64 +143,62 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.updateGreeting();
       });
 
-    // Load real stats from API
+    setInterval(() => {
+      this.currentTime = new Date();
+      this.updateGreeting();
+    }, 60000);
+  }
+
+  private loadDashboardData(): void {
+    // Load stats
     this.dashboardService.getStats()
       .pipe(takeUntil(this.destroy$))
       .subscribe((data) => {
         if (data) {
           this.dashboardStats = data;
-          this.stats = [
-            {
-              title: 'Total Projects',
-              value: data.projects.total,
-              change: data.projects.active,
-              icon: 'projects',
-              color: 'purple',
-              trend: 'up'
-            },
-            {
-              title: 'Active Tasks',
-              value: data.tasks.active,
-              change: data.tasks.total,
-              icon: 'tasks',
-              color: 'blue',
-              trend: 'up'
-            },
-            {
-              title: 'Team Members',
-              value: data.teamMembers,
-              change: 0,
-              icon: 'team',
-              color: 'green',
-              trend: 'up'
-            },
-            {
-              title: 'Support Tickets',
-              value: data.tickets.total,
-              change: data.tickets.open + data.tickets.inProgress,
-              icon: 'completed',
-              color: 'orange',
-              trend: 'up'
-            }
-          ];
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         }
       });
 
-    // Update time every minute
-    setInterval(() => {
-      this.currentTime = new Date();
-      this.updateGreeting();
-    }, 60000);
+    // Load open tickets
+    this.dashboardService.getTodoTickets()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((tickets) => {
+        this.todoTickets = tickets.map(t => ({ ...t, _expanded: false }));
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      });
 
-    // Load recent activities
-    this.loadActivities();
-  }
-
-  loadActivities(): void {
-    this.activityService.getActivities(1, 5)
+    // Load activities — show 5 latest ticket activities first, then others
+    this.activityService.getActivities(1, 20)
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
-        this.recentActivities = res.activities;
+        const all = res.activities;
+        const ticketActivities = all
+          .filter(a => a.type === 'ticket_created' || a.type === 'ticket_reply')
+          .slice(0, 5);
+        const otherActivities = all
+          .filter(a => a.type !== 'ticket_created' && a.type !== 'ticket_reply');
+        this.recentActivities = [...ticketActivities, ...otherActivities].slice(0, 10);
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      });
+
+    // Subscribe to notification state
+    this.notificationService.unseenCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((count) => {
+        this.unseenCount = count;
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      });
+    this.notificationService.shouldJiggle$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((jiggle) => {
+        this.bellJiggle = jiggle;
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       });
   }
 
@@ -205,7 +216,67 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/tickets', ticketId]);
   }
 
+  goToTicketDetail(ticketId: string): void {
+    this.router.navigate(['/tickets', ticketId]);
+  }
+
+  navigateToResource(activity: Activity): void {
+    switch (activity.resourceType) {
+      case 'ticket':
+        if (activity.resourceId) this.router.navigate(['/tickets', activity.resourceId]);
+        break;
+      case 'project':
+        if (activity.resourceId) this.router.navigate(['/projects', activity.resourceId]);
+        break;
+      case 'task':
+        if (activity.projectId && activity.resourceId) {
+          this.router.navigate(['/projects', activity.projectId, 'tasks', activity.resourceId]);
+        }
+        break;
+    }
+  }
+
+  getActivityIcon(type: string): string {
+    const icons: Record<string, string> = {
+      ticket_created: '🎫',
+      ticket_reply: '💬',
+      project_created: '📁',
+      project_updated: '✏️',
+      project_archived: '📦',
+      task_created: '✅',
+      task_updated: '🔄',
+      task_deleted: '🗑️',
+      task_commented: '💬',
+      task_started: '▶️',
+      task_paused: '⏸️',
+      task_completed: '🎉',
+    };
+    return icons[type] || '📋';
+  }
+
+  goToTickets(): void {
+    this.router.navigate(['/tickets']);
+  }
+
   goToActivities(): void {
+    this.router.navigate(['/activities']);
+  }
+
+  truncateText(text: string, wordCount: number): string {
+    if (!text) return '';
+    const words = text.split(/\s+/);
+    if (words.length <= wordCount) return text;
+    return words.slice(0, wordCount).join(' ') + '...';
+  }
+
+  formatTicketDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  onBellClick(): void {
+    this.notificationService.markAsSeen();
     this.router.navigate(['/activities']);
   }
 

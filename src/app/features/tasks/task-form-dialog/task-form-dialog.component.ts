@@ -64,7 +64,7 @@ export class TaskFormDialogComponent implements OnInit, OnDestroy {
   errorMessage = '';
 
   // Options
-  statusOptions: TaskStatus[] = ['To Do', 'In Progress', 'In Review', 'Done', 'Blocked'];
+  statusOptions: TaskStatus[] = ['To Do', 'In Progress', 'In Review', 'Done', 'Archived'];
   priorityOptions: TaskPriority[] = ['Low', 'Medium', 'High', 'Critical'];
 
   ngOnInit(): void {

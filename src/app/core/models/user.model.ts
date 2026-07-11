@@ -9,6 +9,7 @@ export interface User {
   firstName?: string;
   lastName?: string;
   role?: string;
+  departmentId?: string;
   isActive?: boolean;
   isVerified?: boolean;
   lastLogin?: string;
@@ -107,7 +108,7 @@ export interface CreateUserRequest {
   password: string;
   firstName?: string;
   lastName?: string;
-  role: string;
+  departmentId: string;
 }
 
 /**
@@ -116,7 +117,7 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
   firstName?: string;
   lastName?: string;
-  role?: string;
+  departmentId?: string;
   isActive?: boolean;
 }
 

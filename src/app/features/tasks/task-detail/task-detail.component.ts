@@ -172,7 +172,7 @@ export class TaskDetailComponent implements OnInit, OnDestroy {
       'In Progress': 'status-in-progress',
       'In Review': 'status-in-review',
       'Done': 'status-done',
-      'Blocked': 'status-blocked'
+      'Archived': 'status-archived'
     };
     return statusClasses[status] || '';
   }

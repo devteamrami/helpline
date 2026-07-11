@@ -62,7 +62,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   private dialogRef: ComponentRef<TaskFormDialogComponent> | null = null;
 
   // Options
-  statusOptions: TaskStatus[] = ['To Do', 'In Progress', 'In Review', 'Done', 'Blocked'];
+  statusOptions: TaskStatus[] = ['To Do', 'In Progress', 'In Review', 'Done', 'Archived'];
   priorityOptions: TaskPriority[] = ['Low', 'Medium', 'High', 'Critical'];
 
   ngOnInit(): void {
@@ -304,7 +304,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
       'In Progress': 'status-in-progress',
       'In Review': 'status-in-review',
       'Done': 'status-done',
-      'Blocked': 'status-blocked'
+      'Archived': 'status-archived'
     };
     return statusClasses[status] || '';
   }

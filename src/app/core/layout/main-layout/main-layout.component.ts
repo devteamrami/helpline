@@ -3,7 +3,7 @@
  * Layout with navigation drawer for authenticated pages
  */
 
-import { Component, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, HostListener, ChangeDetectorRef, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { Subject, filter, takeUntil } from 'rxjs';
@@ -32,6 +32,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   private notificationService = inject(NotificationService);
+  private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
   // State
@@ -117,6 +118,27 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     },
   ];
 
+  constructor() {
+    afterNextRender(() => {
+      // Start polling AFTER hydration
+      this.notificationService.startPolling();
+
+      this.notificationService.unseenCount$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((count) => {
+          this.unseenCount = count;
+          this.cdr.detectChanges();
+        });
+
+      this.notificationService.shouldJiggle$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((jiggle) => {
+          this.bellJiggle = jiggle;
+          this.cdr.detectChanges();
+        });
+    });
+  }
+
   ngOnInit(): void {
     // Get current user
     this.authService.currentUser$
@@ -136,7 +158,6 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       )
       .subscribe((event: any) => {
         this.currentRoute = event.url;
-        // Close drawer on mobile after navigation
         if (this.isMobile) {
           this.isDrawerOpen = false;
         }
@@ -144,22 +165,6 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
     // Set initial route
     this.currentRoute = this.router.url;
-
-    // Start notification polling
-    this.notificationService.startPolling();
-
-    // Subscribe to notification observables
-    this.notificationService.unseenCount$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((count) => {
-        this.unseenCount = count;
-      });
-
-    this.notificationService.shouldJiggle$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((jiggle) => {
-        this.bellJiggle = jiggle;
-      });
   }
 
   ngOnDestroy(): void {

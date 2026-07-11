@@ -39,6 +39,7 @@
     overflow-y: auto;
     padding: 0;
     margin: 0;
+    background: #1a1d21;
 
     app-task-detail {
       display: block;
@@ -62,6 +63,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      background: #1a1d21 !important;
     }
 
     .mat-mdc-dialog-content {
@@ -70,6 +72,7 @@
       max-height: none !important;
       flex: 1;
       overflow: hidden;
+      background: #1a1d21;
     }
 
     .mat-mdc-dialog-actions {
